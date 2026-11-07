@@ -61,7 +61,7 @@ export default function Login() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
-      <LinearGradient pointerEvents="none" colors={['#0A8F4D22', '#F4F6FA00']} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 360 }} />
+      <LinearGradient pointerEvents="none" colors={['#2874F022', '#F1F3F600']} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 360 }} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ padding: 24, gap: 14, flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
           <FloatingLogo />

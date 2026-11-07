@@ -74,7 +74,7 @@ export const HI_MORE: Record<string, string> = {
   'Subscription plan': 'सब्सक्रिप्शन प्लान', 'Subscription plans': 'सब्सक्रिप्शन प्लान', 'Subscriptions expiring (7d)': 'सब्सक्रिप्शन खत्म होने वाले (7 दिन)', 'Support desk': 'सपोर्ट डेस्क',
   'ADD': 'जोड़ें', 'View cart': 'कार्ट देखें', 'Buy more, pay less': 'ज़्यादा लो, कम दो', 'About this product': 'प्रोडक्ट के बारे में',
   'Deliver from': 'यहाँ से डिलीवरी', 'Best deals': 'बेहतरीन डील', 'All products': 'सभी प्रोडक्ट',
-  'Your cart': 'आपका कार्ट', 'Total incl. GST': 'कुल (GST सहित)',
+  'Your cart': 'आपका कार्ट', 'PLACE ORDER': 'ऑर्डर करें', 'ADD TO CART': 'कार्ट में जोड़ें', 'BUY NOW': 'अभी खरीदें', 'GO TO CART': 'कार्ट में जाएँ', 'Total incl. GST': 'कुल (GST सहित)',
   'Take it': 'मैं लेता हूँ', 'Take photo': 'फ़ोटो खींचें', 'Team report': 'टीम रिपोर्ट', 'The address, GSTIN and pincode print on your GST invoices.': 'पता, GSTIN और पिनकोड आपके GST इनवॉइस पर छपते हैं।',
   'Ticket no., subject or shop': 'टिकट नंबर, विषय या दुकान', Title: 'शीर्षक', To: 'तक', 'To confirm': 'पुष्टि के लिए', 'To pay': 'चुकाना है', 'Top products': 'टॉप प्रोडक्ट', 'Two-person rule': 'दो-व्यक्ति नियम',
   'UPI id': 'UPI आईडी', Unlock: 'अनलॉक करें', Unsettled: 'बिना सेटल', 'Update products with the same SKU': 'एक ही SKU वाले प्रोडक्ट अपडेट करें', 'Update stock': 'स्टॉक अपडेट करें',

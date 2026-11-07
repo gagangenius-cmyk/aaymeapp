@@ -13,7 +13,7 @@ export default function NewEmployee() {
   const submit = () => { setErrors({}); create.mutate({ name: f.name, phone: f.phone, password: f.password, ...(f.email ? { email: f.email } : {}) }, { onError: (e) => setErrors(fieldErrors(e)) }); };
   return (
     <Screen>
-      <Stack.Screen options={{ headerShown: true, title: 'New employee', headerStyle: { backgroundColor: '#04203F' }, headerTintColor: '#fff' }} />
+      <Stack.Screen options={{ headerShown: true, title: 'New employee', headerStyle: { backgroundColor: '#2874F0' }, headerTintColor: '#fff' }} />
       <Field label="Name" value={f.name} onChangeText={set('name')} autoCapitalize="words" error={errors.name} />
       <Field label="Phone (login id)" value={f.phone} onChangeText={set('phone')} keyboardType="phone-pad" maxLength={10} error={errors.phone} />
       <Field label="Email (optional)" value={f.email} onChangeText={set('email')} keyboardType="email-address" error={errors.email} />

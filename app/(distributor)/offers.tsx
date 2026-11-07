@@ -43,7 +43,7 @@ export default function Offers() {
 
   return (
     <Screen>
-      <Stack.Screen options={{ headerShown: true, title: 'Offers & notifications', headerStyle: { backgroundColor: '#04203F' }, headerTintColor: '#fff' }} />
+      <Stack.Screen options={{ headerShown: true, title: 'Offers & notifications', headerStyle: { backgroundColor: '#2874F0' }, headerTintColor: '#fff' }} />
       <Field label="Title" value={f.title} onChangeText={(v) => setF({ ...f, title: v })} autoCapitalize="sentences" error={errors.title} />
       <Field label="Message" value={f.body} onChangeText={(v) => setF({ ...f, body: v })} multiline autoCapitalize="sentences" style={{ minHeight: 80 }} error={errors.body} />
       <Field label="Valid until (YYYY-MM-DD, optional)" value={f.valid_until} onChangeText={(v) => setF({ ...f, valid_until: v })} error={errors.valid_until} />

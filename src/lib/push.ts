@@ -15,7 +15,7 @@ export async function registerForPush(): Promise<void> {
   try {
     if (!Device.isDevice) return; // emulators cannot receive push
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', { name: 'AAYME', importance: Notifications.AndroidImportance.HIGH, lightColor: '#0A8F4D' });
+      await Notifications.setNotificationChannelAsync('default', { name: 'AAYME', importance: Notifications.AndroidImportance.HIGH, lightColor: '#2874F0' });
     }
     let { status } = await Notifications.getPermissionsAsync();
     if (status !== 'granted') status = (await Notifications.requestPermissionsAsync()).status;

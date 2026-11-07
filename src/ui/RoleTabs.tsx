@@ -23,9 +23,9 @@ function TabButton({ def, focused, onPress, onLongPress }: { def: TabDef; focuse
   return (
     <Pressable onPress={onPress} onLongPress={onLongPress} accessibilityRole="tab" accessibilityLabel={tr(def.title)} accessibilityState={{ selected: focused }}
       style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 }}>
-      <Animated.View style={[{ position: 'absolute', top: 4, width: 52, height: 30, borderRadius: 15, backgroundColor: colors.green + '22' }, pill]} />
-      <Animated.View style={icon}><Ionicons name={focused ? def.icon : (`${def.icon}-outline` as any)} size={22} color={focused ? colors.cyan : colors.muted} /></Animated.View>
-      <AppText numberOfLines={1} style={{ fontSize: 10.5, marginTop: 3, color: focused ? colors.green : colors.muted, fontWeight: focused ? '700' : '500' }}>{def.title}</AppText>
+      <Animated.View style={[{ position: 'absolute', top: 4, width: 52, height: 30, borderRadius: 15, backgroundColor: colors.primary + '22' }, pill]} />
+      <Animated.View style={icon}><Ionicons name={focused ? def.icon : (`${def.icon}-outline` as any)} size={22} color={focused ? colors.primary : colors.muted} /></Animated.View>
+      <AppText numberOfLines={1} style={{ fontSize: 10.5, marginTop: 3, color: focused ? colors.primary : colors.muted, fontWeight: focused ? '700' : '500' }}>{def.title}</AppText>
     </Pressable>
   );
 }

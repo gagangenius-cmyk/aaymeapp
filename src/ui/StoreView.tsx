@@ -44,6 +44,7 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
 
   const lines = (products.data?.products ?? []).filter((p: any) => cart[p.id] > 0);
   const total = lines.reduce((s: number, p: any) => s + unitFor(p, cart[p.id]) * cart[p.id] * (1 + p.gst_rate_bps / 10000), 0);
+  const savings = lines.reduce((s: number, p: any) => s + (p.mrp && Number(p.mrp) > unitFor(p, cart[p.id]) ? (Number(p.mrp) - unitFor(p, cart[p.id])) * cart[p.id] : 0), 0);
   const subtotal = lines.reduce((s: number, p: any) => s + unitFor(p, cart[p.id]) * cart[p.id], 0);
   const setQty = (p: any, qty: number) => setCart((c) => ({ ...c, [p.id]: Math.max(0, qty) }));
 
@@ -80,8 +81,8 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
   return (
     <View style={{ gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: colors.navy, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ color: colors.gold, fontSize: 20, fontWeight: '800' }}>{String(s.business_name ?? '?').trim().charAt(0).toUpperCase()}</Text>
+        <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800' }}>{String(s.business_name ?? '?').trim().charAt(0).toUpperCase()}</Text>
         </View>
         <View style={{ flex: 1 }}>
           <Text numberOfLines={1} style={{ color: colors.text, fontSize: 17, fontWeight: '800' }}>{s.business_name}</Text>
@@ -117,10 +118,10 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
             const on = category === c;
             return (
               <Pressable key={c || 'all'} onPress={() => setCategory(c)} accessibilityRole="button" accessibilityLabel={c || 'All'} style={{ alignItems: 'center', width: 68, gap: 6 }}>
-                <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: on ? colors.green : colors.surface, borderWidth: 1.5, borderColor: on ? colors.green : colors.border, alignItems: 'center', justifyContent: 'center' }}>
-                  {c ? <Text style={{ color: on ? '#fff' : colors.navy, fontSize: 22, fontWeight: '800' }}>{c.trim().charAt(0).toUpperCase()}</Text> : <Ionicons name="grid" size={22} color={on ? '#fff' : colors.navy} />}
+                <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: on ? colors.primary : colors.surface, borderWidth: 1.5, borderColor: on ? colors.primary : colors.border, alignItems: 'center', justifyContent: 'center' }}>
+                  {c ? <Text style={{ color: on ? '#fff' : colors.primary, fontSize: 22, fontWeight: '800' }}>{c.trim().charAt(0).toUpperCase()}</Text> : <Ionicons name="grid" size={22} color={on ? '#fff' : colors.primary} />}
                 </View>
-                <Text numberOfLines={1} style={{ color: on ? colors.green : colors.text, fontSize: 11.5, fontWeight: on ? '800' : '600' }}>{c || 'All'}</Text>
+                <Text numberOfLines={1} style={{ color: on ? colors.primary : colors.text, fontSize: 11.5, fontWeight: on ? '800' : '600' }}>{c || 'All'}</Text>
               </Pressable>
             );
           })}
@@ -132,10 +133,10 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
           <H2>Best deals</H2>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 8 }} style={{ flexGrow: 0 }}>
             {deals.map((p: any) => (
-              <Pressable key={p.id} onPress={() => setDetailId(p.id)} style={{ width: 140, backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, padding: 8, gap: 4 }}>
+              <Pressable key={p.id} onPress={() => setDetailId(p.id)} style={{ width: 140, backgroundColor: colors.surface, borderRadius: 4, borderWidth: 1, borderColor: colors.border, padding: 8, gap: 4 }}>
                 <View>
                   <ProductImage uri={mediaUrl(p.image_url)} />
-                  <View style={{ position: 'absolute', top: 6, left: 6, backgroundColor: colors.gold, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 }}><Text style={{ color: colors.navy, fontSize: 10.5, fontWeight: '800' }}>{`${p.discount_pct}% OFF`}</Text></View>
+                  <View style={{ position: 'absolute', top: 6, left: 6, backgroundColor: colors.green, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}><Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '800' }}>{`${p.discount_pct}% OFF`}</Text></View>
                 </View>
                 <Text numberOfLines={1} style={{ color: colors.text, fontSize: 13, fontWeight: '700' }}>{p.display_name}</Text>
                 <Row style={{ gap: 6, flexWrap: 'nowrap' }}><Text style={{ color: colors.text, fontSize: 15, fontWeight: '800' }}>{inr(p.price)}</Text><Muted style={{ textDecorationLine: 'line-through', fontSize: 11 }}>{inr(p.mrp)}</Muted></Row>
@@ -155,12 +156,12 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
       )}
       {lines.length > 0 && <View style={{ height: 76 }} />}
 
-      <DetailSheet p={(products.data?.products ?? []).find((x: any) => x.id === detailId)} qty={cart[detailId ?? 0] ?? 0} onClose={() => setDetailId(null)} onQty={(p, n) => setQty(p, n)} />
+      <DetailSheet p={(products.data?.products ?? []).find((x: any) => x.id === detailId)} qty={cart[detailId ?? 0] ?? 0} onClose={() => setDetailId(null)} onQty={(p, n) => setQty(p, n)} onGoCart={() => setCartOpen(true)} />
 
       <Modal visible={cartOpen} animationType="slide" transparent onRequestClose={() => setCartOpen(false)}>
-        <View style={{ flex: 1, backgroundColor: '#04203F99', justifyContent: 'flex-end' }}>
+        <View style={{ flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' }}>
           <Pressable style={{ flex: 1 }} onPress={() => setCartOpen(false)} />
-          <View style={{ backgroundColor: colors.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '88%', padding: 16, gap: 12 }}>
+          <View style={{ backgroundColor: colors.bg, borderTopLeftRadius: 12, borderTopRightRadius: 12, maxHeight: '90%', padding: 16, gap: 12 }}>
             <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
               <H2>Your cart</H2>
               <Pressable onPress={() => setCartOpen(false)} hitSlop={10}><Ionicons name="close" size={24} color={colors.text} /></Pressable>
@@ -191,7 +192,14 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
                 <Text style={{ color: colors.text, fontSize: 20, fontWeight: '800' }}>{inr(total)}</Text>
               </Row>
             </View>
-            <Button title="Place order" onPress={placeOrder} loading={busy} disabled={!lines.length} />
+            {savings > 0 && <Text style={{ color: colors.green, fontWeight: '700', fontSize: 13.5 }}>{`You will save ${inr(savings)} on this order`}</Text>}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                {savings > 0 && <Muted style={{ textDecorationLine: 'line-through', fontSize: 12 }}>{inr(total + savings)}</Muted>}
+                <Text style={{ color: colors.text, fontSize: 20, fontWeight: '800' }}>{inr(total)}</Text>
+              </View>
+              <View style={{ flex: 1.2 }}><Button title="PLACE ORDER" onPress={placeOrder} loading={busy} disabled={!lines.length} /></View>
+            </View>
           </View>
         </View>
       </Modal>
@@ -204,13 +212,13 @@ function Stepper({ p, qty, max, onChange }: { p: any; qty: number; max: number; 
   if (qty <= 0) {
     return (
       <Pressable onPress={() => onChange(p.min_order_qty)} accessibilityRole="button" accessibilityLabel="ADD"
-        style={{ borderWidth: 1.5, borderColor: colors.green, borderRadius: 6, paddingVertical: 8, alignItems: 'center', backgroundColor: colors.surface }}>
-        <Text style={{ color: colors.green, fontWeight: '800', fontSize: 13, letterSpacing: 0.6 }}>ADD</Text>
+        style={{ borderWidth: 1.5, borderColor: colors.primary, borderRadius: 4, paddingVertical: 8, alignItems: 'center', backgroundColor: colors.surface }}>
+        <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13, letterSpacing: 0.6 }}>ADD</Text>
       </Pressable>
     );
   }
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.green, borderRadius: 6 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.primary, borderRadius: 4 }}>
       <Pressable hitSlop={6} onPress={() => onChange(qty <= p.min_order_qty ? 0 : qty - 1)} style={{ paddingHorizontal: 12, paddingVertical: 8 }}><Ionicons name="remove" size={18} color="#fff" /></Pressable>
       <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{qty}</Text>
       <Pressable hitSlop={6} onPress={() => onChange(Math.min(qty + 1, max))} style={{ paddingHorizontal: 12, paddingVertical: 8 }}><Ionicons name="add" size={18} color="#fff" /></Pressable>
@@ -228,7 +236,7 @@ function ProductCard({ p, qty, onOpen, onQty }: { p: any; qty: number; onOpen: (
         <Pressable onPress={onOpen} style={{ gap: 5 }}>
           <View>
             <ProductImage uri={mediaUrl(p.image_url)} style={{ backgroundColor: colors.surface }} />
-            {out && <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#04203FCC', paddingVertical: 4, alignItems: 'center' }}><Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>Out of stock</Text></View>}
+            {out && <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#000000B3', paddingVertical: 4, alignItems: 'center' }}><Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>Out of stock</Text></View>}
           </View>
           {!!p.brand && <Text numberOfLines={1} style={{ color: colors.muted, fontSize: 12, fontWeight: '700' }}>{p.brand}</Text>}
           <Text numberOfLines={2} style={{ color: colors.text, fontSize: 13.5, minHeight: 36 }}>{p.display_name}</Text>
@@ -247,7 +255,7 @@ function ProductCard({ p, qty, onOpen, onQty }: { p: any; qty: number; onOpen: (
 }
 
 /** Product page: swipeable photos, price, description and quantity breaks. */
-function DetailSheet({ p, qty, onClose, onQty }: { p: any; qty: number; onClose: () => void; onQty: (p: any, n: number) => void }) {
+function DetailSheet({ p, qty, onClose, onQty, onGoCart }: { p: any; qty: number; onClose: () => void; onQty: (p: any, n: number) => void; onGoCart: () => void }) {
   const { width } = useWindowDimensions();
   const [page, setPage] = useState(0);
   if (!p) return null;
@@ -256,24 +264,24 @@ function DetailSheet({ p, qty, onClose, onQty }: { p: any; qty: number; onClose:
   const hasMrp = p.mrp && Number(p.mrp) > Number(p.price);
   return (
     <Modal visible animationType="slide" transparent onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: '#04203F99', justifyContent: 'flex-end' }}>
-        <Pressable style={{ flex: 1 }} onPress={onClose} />
-        <View style={{ backgroundColor: colors.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '92%', overflow: 'hidden' }}>
+      <View style={{ flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' }}>
+        <Pressable style={{ height: 40 }} onPress={onClose} />
+        <View style={{ flex: 1, backgroundColor: colors.bg, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
           <ScrollView>
             <View>
               <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} onMomentumScrollEnd={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / width))}>
                 {imgs.map((im) => <View key={im.id} style={{ width, padding: 16 }}><ProductImage uri={mediaUrl(im.url || null)} /></View>)}
               </ScrollView>
-              {imgs.length > 1 && <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, paddingBottom: 4 }}>{imgs.map((im, i) => <View key={im.id} style={{ width: i === page ? 18 : 6, height: 6, borderRadius: 3, backgroundColor: i === page ? colors.green : colors.border }} />)}</View>}
+              {imgs.length > 1 && <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, paddingBottom: 4 }}>{imgs.map((im, i) => <View key={im.id} style={{ width: i === page ? 18 : 6, height: 6, borderRadius: 3, backgroundColor: i === page ? colors.primary : colors.border }} />)}</View>}
               <Pressable onPress={onClose} hitSlop={10} style={{ position: 'absolute', top: 12, right: 12, backgroundColor: colors.surface, borderRadius: 99, padding: 6 }}><Ionicons name="close" size={22} color={colors.text} /></Pressable>
             </View>
             <View style={{ padding: 16, gap: 8 }}>
               <Text style={{ color: colors.text, fontSize: 20, fontWeight: '800' }}>{p.display_name}</Text>
               {!!p.brand && <Muted>{p.brand}</Muted>}
               <Row style={{ gap: 10, flexWrap: 'nowrap' }}>
-                <Text style={{ color: colors.text, fontSize: 24, fontWeight: '800' }}>{inr(p.price)}</Text>
+                {p.discount_pct > 0 && <Text style={{ color: colors.green, fontSize: 18, fontWeight: '800' }}>{`↓${p.discount_pct}%`}</Text>}
                 {hasMrp ? <Muted style={{ textDecorationLine: 'line-through', fontSize: 15 }}>{inr(p.mrp)}</Muted> : null}
-                {p.discount_pct > 0 && <View style={{ backgroundColor: colors.gold, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 }}><Text style={{ color: colors.navy, fontSize: 12, fontWeight: '800' }}>{`${p.discount_pct}% OFF`}</Text></View>}
+                <Text style={{ color: colors.text, fontSize: 24, fontWeight: '800' }}>{inr(p.price)}</Text>
               </Row>
               <Muted>{`/${p.unit} · GST ${p.gst_rate_bps / 100}% · MOQ ${p.min_order_qty}`}</Muted>
               {p.price_note ? <Muted style={{ color: colors.green }}>{p.price_note}</Muted> : null}
@@ -283,7 +291,7 @@ function DetailSheet({ p, qty, onClose, onQty }: { p: any; qty: number; onClose:
                   {p.tiers.map((t: any) => <Muted key={t.min_qty}>{`${t.min_qty}+ at ${inr(t.price)}`}</Muted>)}
                 </View>
               )}
-              {p.highlights?.length > 0 && <View style={{ gap: 4 }}>{p.highlights.map((h: string) => <Row key={h} style={{ flexWrap: 'nowrap', alignItems: 'flex-start' }}><Text style={{ color: colors.green }}>•</Text><Body style={{ flex: 1 }}>{h}</Body></Row>)}</View>}
+              {p.highlights?.length > 0 && <View style={{ gap: 4 }}>{p.highlights.map((h: string) => <Row key={h} style={{ flexWrap: 'nowrap', alignItems: 'flex-start' }}><Text style={{ color: colors.primary }}>•</Text><Body style={{ flex: 1 }}>{h}</Body></Row>)}</View>}
               {!!p.description && <><Text style={{ color: colors.text, fontWeight: '700', marginTop: 4 }}>About this product</Text><Body>{p.description}</Body></>}
               {(() => {
                 const rows: [string, string][] = [
@@ -306,8 +314,18 @@ function DetailSheet({ p, qty, onClose, onQty }: { p: any; qty: number; onClose:
               })()}
             </View>
           </ScrollView>
-          <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface }}>
-            {out ? <Chip label="Out of stock" tone="danger" /> : <Stepper p={p} qty={qty} max={max} onChange={(n) => onQty(p, n)} />}
+          <View style={{ padding: 12, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface }}>
+            {out ? <Chip label="Out of stock" tone="danger" /> : qty > 0 ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={{ flex: 1 }}><Stepper p={p} qty={qty} max={max} onChange={(n) => onQty(p, n)} /></View>
+                <Pressable onPress={() => { onClose(); onGoCart(); }} accessibilityRole="button" accessibilityLabel="Go to cart" style={{ flex: 1, backgroundColor: colors.cta, borderRadius: 4, paddingVertical: 12, alignItems: 'center' }}><Text style={{ color: '#fff', fontWeight: '800', fontSize: 14, letterSpacing: 0.4 }}>GO TO CART</Text></Pressable>
+              </View>
+            ) : (
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <Pressable onPress={() => onQty(p, p.min_order_qty)} accessibilityRole="button" accessibilityLabel="Add to cart" style={{ flex: 1, backgroundColor: colors.gold, borderRadius: 4, paddingVertical: 13, alignItems: 'center' }}><Text style={{ color: colors.text, fontWeight: '800', fontSize: 14, letterSpacing: 0.4 }}>ADD TO CART</Text></Pressable>
+                <Pressable onPress={() => { onQty(p, p.min_order_qty); onClose(); onGoCart(); }} accessibilityRole="button" accessibilityLabel="Buy now" style={{ flex: 1, backgroundColor: colors.cta, borderRadius: 4, paddingVertical: 13, alignItems: 'center' }}><Text style={{ color: '#fff', fontWeight: '800', fontSize: 14, letterSpacing: 0.4 }}>BUY NOW</Text></Pressable>
+              </View>
+            )}
           </View>
         </View>
       </View>

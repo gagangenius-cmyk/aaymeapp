@@ -15,7 +15,7 @@ export default function RetailerOffers() {
       <H1>Offers</H1>
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : !q.data.offers.length ? <Empty text="No offers right now" /> :
         q.data.offers.map((a: any) => (
-          <Card key={a.id} style={a.unread ? { borderColor: '#0A8F4D' } : undefined} onPress={a.connected ? () => router.push({ pathname: '/store/[id]', params: { id: String(a.distributor_id) } }) : undefined}>
+          <Card key={a.id} style={a.unread ? { borderColor: '#2874F0' } : undefined} onPress={a.connected ? () => router.push({ pathname: '/store/[id]', params: { id: String(a.distributor_id) } }) : undefined}>
             <Row style={{ justifyContent: 'space-between' }}><Body style={{ fontWeight: '700', flex: 1 }}>{a.title}</Body>{a.unread && <Chip label="New" tone="ok" />}</Row>
             <Body>{a.body}</Body>
             {a.product_name ? <Muted>On: {a.product_name}</Muted> : null}

@@ -43,7 +43,7 @@ export default function ReportsExport() {
     <Screen onRefresh={jobs.refetch} refreshing={jobs.isRefetching}>
       <H2>Choose a report</H2>
       {cat.data.reports.map((r: any) => (
-        <Card key={r.type} onPress={() => setType(r.type)} style={type === r.type ? { borderColor: '#0A8F4D' } : undefined}>
+        <Card key={r.type} onPress={() => setType(r.type)} style={type === r.type ? { borderColor: '#2874F0' } : undefined}>
           <Body style={{ fontWeight: '700' }}>{r.title}</Body><Muted>{r.description}</Muted>
         </Card>
       ))}

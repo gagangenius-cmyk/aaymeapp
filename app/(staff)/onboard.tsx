@@ -56,7 +56,7 @@ export default function Onboard() {
     const r = done.request;
     return (
       <Screen>
-        <Stack.Screen options={{ headerShown: true, title: 'Onboarding', headerStyle: { backgroundColor: '#04203F' }, headerTintColor: '#fff' }} />
+        <Stack.Screen options={{ headerShown: true, title: 'Onboarding', headerStyle: { backgroundColor: '#2874F0' }, headerTintColor: '#fff' }} />
         <Card>
           <H2>{r.status === 'completed' ? 'Distributor created' : 'Waiting for the subscription fee'}</H2>
           <Body>{r.business_name} · {r.plan_name} ({r.days} days)</Body>
@@ -77,7 +77,7 @@ export default function Onboard() {
 
   return (
     <Screen>
-      <Stack.Screen options={{ headerShown: true, title: 'Onboard distributor', headerStyle: { backgroundColor: '#04203F' }, headerTintColor: '#fff' }} />
+      <Stack.Screen options={{ headerShown: true, title: 'Onboard distributor', headerStyle: { backgroundColor: '#2874F0' }, headerTintColor: '#fff' }} />
       <Field label="Business name" value={f.business_name} onChangeText={set('business_name')} autoCapitalize="words" error={errors.business_name} />
       <Field label="Owner name" value={f.name} onChangeText={set('name')} autoCapitalize="words" error={errors.name} />
       <Field label="Phone (login id)" value={f.phone} onChangeText={set('phone')} keyboardType="phone-pad" maxLength={10} error={errors.phone} />

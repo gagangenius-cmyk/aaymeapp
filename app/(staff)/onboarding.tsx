@@ -15,7 +15,7 @@ export default function OnboardingRequests() {
   const cancel = useSend<{ id: number }>((b) => `/staff/onboarding/${b.id}/cancel`, { invalidate: ['/staff/onboarding'] });
   return (
     <Screen onRefresh={q.refetch} refreshing={q.isRefetching}>
-      <Stack.Screen options={{ headerShown: true, title: 'Payment requests', headerStyle: { backgroundColor: '#04203F' }, headerTintColor: '#fff' }} />
+      <Stack.Screen options={{ headerShown: true, title: 'Payment requests', headerStyle: { backgroundColor: '#2874F0' }, headerTintColor: '#fff' }} />
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : !q.data.requests.length ? <Empty text="No onboarding requests" /> :
         q.data.requests.map((r: any) => (
           <Card key={r.id}>

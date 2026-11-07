@@ -26,9 +26,9 @@ export function CartBarHost() {
           <Text style={{ color: colors.text, fontSize: 18, fontWeight: '800' }}>{inr(d.total)}</Text>
         </View>
         <Pressable onPress={d.onPress} accessibilityRole="button" accessibilityLabel="View cart"
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.gold, borderRadius: 8, paddingVertical: 12, paddingHorizontal: 22 }}>
-          <Ionicons name="cart" size={18} color={colors.navy} />
-          <Text style={{ color: colors.navy, fontWeight: '800', fontSize: 15 }}>View cart</Text>
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.gold, borderRadius: 4, paddingVertical: 12, paddingHorizontal: 22 }}>
+          <Ionicons name="cart" size={18} color={colors.text} />
+          <Text style={{ color: colors.text, fontWeight: '800', fontSize: 15 }}>View cart</Text>
         </Pressable>
       </View>
     </View>

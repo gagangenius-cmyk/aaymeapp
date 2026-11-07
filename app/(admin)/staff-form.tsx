@@ -41,7 +41,7 @@ export default function StaffForm() {
 
   return (
     <Screen>
-      <Stack.Screen options={{ headerShown: true, title: id ? 'Edit employee' : 'New company employee', headerStyle: { backgroundColor: '#04203F' }, headerTintColor: '#fff' }} />
+      <Stack.Screen options={{ headerShown: true, title: id ? 'Edit employee' : 'New company employee', headerStyle: { backgroundColor: '#2874F0' }, headerTintColor: '#fff' }} />
       <Field label="Name" value={f.name} onChangeText={(v) => setF({ ...f, name: v })} autoCapitalize="words" error={errors.name} />
       {!id && <Field label="Phone (login id)" value={f.phone} onChangeText={(v) => setF({ ...f, phone: v })} keyboardType="phone-pad" maxLength={10} error={errors.phone} />}
       {!id && <Field label="Email (for sign-in codes)" value={f.email} onChangeText={(v) => setF({ ...f, email: v })} keyboardType="email-address" error={errors.email} />}

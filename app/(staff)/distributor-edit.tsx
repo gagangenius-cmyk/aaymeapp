@@ -33,7 +33,7 @@ export default function DistributorEdit() {
 
   return (
     <Screen>
-      <Stack.Screen options={{ headerShown: true, title: d.business_name, headerStyle: { backgroundColor: '#04203F' }, headerTintColor: '#fff' }} />
+      <Stack.Screen options={{ headerShown: true, title: d.business_name, headerStyle: { backgroundColor: '#2874F0' }, headerTintColor: '#fff' }} />
       <Card><Body>{d.owner_name} · {d.phone}</Body><Muted>Subscription ends {new Date(d.subscription_ends_at).toLocaleDateString()}</Muted></Card>
       <Toggle label="Account active" value={active} onChange={setActive} />
       <H2>Features</H2>

@@ -74,7 +74,7 @@ export function Button({ title, onPress, loading, variant = 'primary', disabled,
   const a11y = { accessibilityRole: 'button' as const, accessibilityState: { disabled: !!off, busy: !!loading }, accessibilityLabel: title };
   if (variant === 'primary') return (
     <APressable onPress={go} disabled={off} {...press.handlers} {...a11y} style={[{ opacity: off ? 0.5 : 1 }, press.style]}>
-      <LinearGradient colors={gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[box, { shadowColor: colors.green, shadowOpacity: 0.25, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 4 }]}>{label}</LinearGradient>
+      <LinearGradient colors={gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[box, { elevation: 1 }]}>{label}</LinearGradient>
     </APressable>
   );
   return (
@@ -122,9 +122,9 @@ export function Chip({ label, active, onPress, tone }: { label: string; active?:
   const press = usePressScale(0.94);
   const c = tone ? colors[tone] : active ? colors.cyan : colors.border;
   const body = (
-    <AppText style={{ color: tone ? colors[tone] : active ? colors.green : colors.muted, fontSize: 12.5, fontWeight: active || tone ? '700' : '500' }}>{label}</AppText>
+    <AppText style={{ color: tone ? colors[tone] : active ? colors.primary : colors.muted, fontSize: 12.5, fontWeight: active || tone ? '700' : '500' }}>{label}</AppText>
   );
-  const box: ViewStyle = { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 99, borderWidth: 1, borderColor: c, backgroundColor: tone ? colors[tone] + '1A' : active ? colors.green + '1F' : 'transparent' };
+  const box: ViewStyle = { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 99, borderWidth: 1, borderColor: c, backgroundColor: tone ? colors[tone] + '1A' : active ? colors.primary + '1F' : 'transparent' };
   if (!onPress) return <View style={box}>{body}</View>;
   return <APressable onPress={() => { tap('light'); onPress(); }} {...press.handlers} accessibilityRole="button" accessibilityState={{ selected: !!active }} style={[box, press.style]}>{body}</APressable>;
 }

@@ -52,7 +52,7 @@ export default function Catalog() {
       {q.data?.summary && <Muted>{q.data.summary.total} products · {q.data.summary.low_stock} low · {q.data.summary.out_of_stock} out of stock</Muted>}
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : !q.data.products.length ? <Empty text="No products" /> :
         q.data.products.map((p: any) => (
-          <Card key={p.id} style={picked.includes(p.id) ? { borderColor: '#0A8F4D' } : undefined}
+          <Card key={p.id} style={picked.includes(p.id) ? { borderColor: '#2874F0' } : undefined}
             onPress={() => (selecting ? toggle(p.id) : router.push({ pathname: '/product-form', params: { id: String(p.id) } }))}>
             <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
               {selecting && <Chip label={picked.includes(p.id) ? '✓' : '○'} active={picked.includes(p.id)} />}
