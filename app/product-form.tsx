@@ -75,7 +75,7 @@ export default function ProductForm() {
     if (!pid || (!importImgs.length && !picked.length)) { goBack(router); return; }
     (async () => {
       let failed = 0;
-      for (const ph of picked) { try { await uploadRaw(`/catalog/${pid}/images`, ph.uri, ph.mime); } catch { failed++; } }
+      for (const ph of picked) { try { await uploadRaw(`/catalog/${pid}/images`, ph.uri, ph.mime); } catch { try { await uploadRaw(`/catalog/${pid}/images`, ph.uri, ph.mime); } catch { failed++; } } }
       for (const url of importImgs) await api(`/catalog/${pid}/images/import`, { body: { url } }).catch(() => {});
       if (failed) toast.info(`${failed} photo${failed > 1 ? 's' : ''} could not be uploaded. Add ${failed > 1 ? 'them' : 'it'} again from the product page.`);
     })().finally(() => goBack(router));

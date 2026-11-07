@@ -4,7 +4,7 @@ import { Alert } from './alert';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useQueryClient } from '@tanstack/react-query';
-import { api, mediaUrl, uploadRaw } from '../lib/api';
+import { api, imageMime, mediaUrl, uploadRaw } from '../lib/api';
 import { useGet, useSend } from '../lib/hooks';
 import { colors } from '../lib/theme';
 import { Button, Card, Chip, Field, H2, Muted, Row } from './kit';
@@ -18,12 +18,12 @@ export function ProductPhotos({ productId, images }: { productId: number; images
   async function add(fromCamera: boolean) {
     const perm = fromCamera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return Alert.alert('Permission needed', 'Allow access to add a photo.');
-    // the server accepts up to 1.5 MB: let the picker shrink the photo for us
+    // the server accepts up to 4 MB: let the picker shrink the photo for us
     const opts: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.6, allowsEditing: true, aspect: [1, 1], exif: false };
     const r = fromCamera ? await ImagePicker.launchCameraAsync(opts) : await ImagePicker.launchImageLibraryAsync(opts);
     if (r.canceled) return;
     setBusy(true);
-    try { await uploadRaw(`/catalog/${productId}/images`, r.assets[0].uri, r.assets[0].mimeType ?? 'image/jpeg'); refresh(); }
+    try { await uploadRaw(`/catalog/${productId}/images`, r.assets[0].uri, imageMime(r.assets[0].mimeType)); refresh(); }
     catch (e: any) { Alert.alert('Photo not added', e.message); } finally { setBusy(false); }
   }
   const act = (img: { id: number }, i: number) => Alert.alert('Photo', undefined, [
@@ -59,7 +59,7 @@ export function NewProductPhotos({ photos, onChange, found }: { photos: PickedPh
     const opts: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.6, allowsEditing: true, aspect: [1, 1], exif: false };
     const r = fromCamera ? await ImagePicker.launchCameraAsync(opts) : await ImagePicker.launchImageLibraryAsync(opts);
     if (r.canceled) return;
-    onChange([...photos, { uri: r.assets[0].uri, mime: r.assets[0].mimeType ?? 'image/jpeg' }].slice(0, max));
+    onChange([...photos, { uri: r.assets[0].uri, mime: imageMime(r.assets[0].mimeType) }].slice(0, max));
   }
   return (
     <View style={{ gap: 8 }}>

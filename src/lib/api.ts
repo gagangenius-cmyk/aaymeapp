@@ -95,6 +95,9 @@ export const newKey = uuid;
 export const mediaUrl = (p?: string | null) => (p ? (p.startsWith('http') ? p : `${API_URL}${p}`) : null);
 
 /** POST a local file as the raw request body (used for product photos: the API takes the image bytes directly). */
+/** The picker can report 'image/jpg', 'image/heic' or nothing at all; the server reads the real format from the bytes, so only the header needs to be one it routes. */
+export const imageMime = (m?: string | null) => (m === 'image/png' || m === 'image/webp' ? m : 'image/jpeg');
+
 export async function uploadRaw<T = any>(path: string, uri: string, mime: string): Promise<T> {
   const blob = await (await fetch(uri)).blob();
   // hosted API functions refuse bodies above ~4.5 MB
