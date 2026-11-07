@@ -1,0 +1,1 @@
+__d(function(g,r,i,a,m,e,d){"use strict";Object.defineProperty(e,'__esModule',{value:!0}),Object.defineProperty(e,"default",{enumerable:!0,get:function(){return o}}),r(d[0]);var t=r(d[1]),n=r(d[2]),u=r(d[3]),c=r(d[4]);function o(){const{id:o}=(0,t.useLocalSearchParams)();return(0,c.jsx)(n.Screen,{children:(0,c.jsx)(u.StoreView,{id:Number(o)})})}},848,[12,857,856,874,6]);

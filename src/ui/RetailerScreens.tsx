@@ -1,0 +1,104 @@
+import React, { useState } from 'react';
+import { goBack } from '../lib/nav';
+import { Alert } from './alert';
+import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../lib/auth';
+import { api } from '../lib/api';
+import { fieldErrors, useGet, useSend } from '../lib/hooks';
+import { Body, Button, Card, Chip, Empty, ErrorBox, Field, H1, H2, inr, Loading, Muted, Row, Screen } from './kit';
+
+/** Retailers under this distributor. An employee only sees the ones they manage. */
+export function RetailerList({ createRoute }: { createRoute: string }) {
+  const { role } = useAuth();
+  const router = useRouter();
+  const q = useGet<any>('/distributor/retailers', { mine: role === 'employee' ? '1' : '0' });
+  const [phone, setPhone] = useState('');
+  const invite = useSend<{ phone: string }>('/distributor/retailers', { invalidate: ['/distributor/retailers'], onDone: () => { setPhone(''); Alert.alert('Request sent', 'If a retailer with this number exists, they have been asked to accept.'); } });
+  const cancel = useSend<{ id: number }>((b) => `/distributor/retailers/${b.id}`, { method: 'DELETE', invalidate: ['/distributor/retailers'] });
+  return (
+    <Screen onRefresh={q.refetch} refreshing={q.isRefetching}>
+      <H1>Retailers</H1>
+      <Button title="Add new retailer" onPress={() => router.push(createRoute as any)} />
+      {role === 'distributor' && (
+        <Card>
+          <Muted>Already on AAYME? Invite them by phone; they must accept before you can supply them.</Muted>
+          <Row><Field label="Retailer phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" maxLength={10} style={{ minWidth: 170 }} /><Button small variant="ghost" title="Invite" disabled={phone.length !== 10} loading={invite.isPending} onPress={() => invite.mutate({ phone })} /></Row>
+        </Card>
+      )}
+      {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : !q.data.retailers.length ? <Empty text="No retailers yet" /> :
+        q.data.retailers.map((r: any) => (
+          <Card key={r.id} onPress={() => router.push({ pathname: '/retailer-manage', params: { retailer_id: String(r.id), name: r.shop_name } })}>
+            <Body style={{ fontWeight: '700' }}>{r.shop_name}</Body>
+            <Muted>{r.name} · {r.phone} · {r.pincode}</Muted>
+            <Muted>Managed by {r.managed_by_name ?? 'distributor'} · due {inr(Number(r.balance_due_paise) / 100)}{r.category_names ? ` · ${r.category_names}` : ''}</Muted>
+          </Card>
+        ))}
+      {!!q.data?.pending?.length && <><H2>Waiting for retailer to accept</H2>{q.data.pending.map((p: any) => <Row key={p.id} style={{ justifyContent: 'space-between' }}><Muted>{p.phone}</Muted>{role === 'distributor' && <Button small variant="ghost" title="Withdraw" onPress={() => cancel.mutate({ id: p.id })} />}</Row>)}</>}
+    </Screen>
+  );
+}
+
+/**
+ * Create a retailer account. A distributor may put the retailer under any of their employees (or themselves);
+ * an employee's retailers always sit under that employee (the server forces it).
+ */
+export function RetailerForm() {
+  const { role } = useAuth();
+  const router = useRouter();
+  const qc = useQueryClient();
+  const team = useGet<any>('/distributor/employees', undefined, role === 'distributor');
+  const cats = useGet<any>('/distributor/me');
+  const [f, setF] = useState<Record<string, string>>({});
+  const [managedBy, setManagedBy] = useState<number | null>(null);
+  const [categoryIds, setCategoryIds] = useState<number[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
+  const offered: { id: number; name: string }[] = cats.data?.categories ?? [];
+
+  async function submit() {
+    setErrors({}); setBusy(true);
+    try {
+      await api('/distributor/retailer-accounts', {
+        body: {
+          phone: f.phone, name: f.name, password: f.password, shop_name: f.shop_name, pincode: f.pincode,
+          ...(f.email ? { email: f.email } : {}), ...(f.address ? { address: f.address } : {}), ...(f.gst_no ? { gst_no: f.gst_no } : {}),
+          ...(managedBy ? { managed_by_id: managedBy } : {}), ...(categoryIds.length ? { category_ids: categoryIds } : {}),
+        },
+      });
+      qc.invalidateQueries({ queryKey: ['/distributor/retailers'] });
+      goBack(router);
+    } catch (e: any) { setErrors({ ...fieldErrors(e), _: e.message }); } finally { setBusy(false); }
+  }
+
+  return (
+    <Screen>
+      <Field label="Shop name" value={f.shop_name} onChangeText={set('shop_name')} autoCapitalize="words" error={errors.shop_name} />
+      <Field label="Owner name" value={f.name} onChangeText={set('name')} autoCapitalize="words" error={errors.name} />
+      <Field label="Phone (login id)" value={f.phone} onChangeText={set('phone')} keyboardType="phone-pad" maxLength={10} error={errors.phone} />
+      <Field label="Pincode" value={f.pincode} onChangeText={set('pincode')} keyboardType="number-pad" maxLength={6} error={errors.pincode} />
+      <Field label="Password (8+ characters)" value={f.password} onChangeText={set('password')} secureTextEntry error={errors.password} />
+      <Field label="Email (optional)" value={f.email} onChangeText={set('email')} keyboardType="email-address" error={errors.email} />
+      <Field label="Address (optional)" value={f.address} onChangeText={set('address')} error={errors.address} />
+      <Field label="GSTIN (optional)" value={f.gst_no} onChangeText={set('gst_no')} autoCapitalize="characters" maxLength={15} error={errors.gst_no} />
+
+      {role === 'distributor' && !!team.data?.employees?.length && (<>
+        <H2>Place under</H2>
+        <Row>
+          <Chip label="Me (owner)" active={managedBy === null} onPress={() => setManagedBy(null)} />
+          {team.data.employees.filter((e: any) => e.is_active).map((e: any) => <Chip key={e.id} label={e.name} active={managedBy === e.id} onPress={() => setManagedBy(e.id)} />)}
+        </Row>
+      </>)}
+
+      {!!offered.length && (<>
+        <H2>Categories this retailer can buy</H2>
+        <Row>{offered.map((c) => <Chip key={c.id} label={c.name} active={categoryIds.includes(c.id)} onPress={() => setCategoryIds(categoryIds.includes(c.id) ? categoryIds.filter((x) => x !== c.id) : [...categoryIds, c.id])} />)}</Row>
+        {!!errors.category_ids && <Muted>{errors.category_ids}</Muted>}
+      </>)}
+
+      {!!errors._ && <Body style={{ color: '#D93A55' }}>{errors._}</Body>}
+      <Button title="Create retailer" onPress={submit} loading={busy} />
+    </Screen>
+  );
+}
