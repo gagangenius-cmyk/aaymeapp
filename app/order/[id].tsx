@@ -6,6 +6,7 @@ import { api } from '../../src/lib/api';
 import { useAuth } from '../../src/lib/auth';
 import { useGet, useSend } from '../../src/lib/hooks';
 import { STATUS_TONE } from '../../src/ui/OrdersScreen';
+import { PaymentSchedule } from '../../src/ui/PaymentSchedule';
 import { Body, Button, Card, Chip, ErrorBox, H2, inr, Loading, Muted, Row, Screen } from '../../src/ui/kit';
 
 type Action = { to: string; label: string; danger?: boolean };
@@ -63,6 +64,8 @@ export default function OrderDetail() {
         {o.is_adjusted && <Muted>Quantities were adjusted when accepting.</Muted>}
         {cod && o.status !== 'delivered' && role !== 'retailer' && <Muted style={{ color: '#C77700' }}>Collect {inr(o.total)} in cash on delivery.</Muted>}
       </Card>
+
+      <PaymentSchedule orderId={o.id} role={role as string} status={o.status} />
 
       {!adjusting && !!actions.length && (
         <Row>

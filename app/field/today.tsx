@@ -14,6 +14,7 @@ const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 export default function Today() {
   const qc = useQueryClient();
   const q = useGet<any>('/field/today');
+  const mine = useGet<any>('/field/my-visits', { days: 14 });
   const [scan, setScan] = useState(false);
 
   async function punch(code: string) {
@@ -24,7 +25,7 @@ export default function Today() {
       if (p.granted) { const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High }); coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; }
       const r = await api<any>('/field/punch', { body: { code, ...coords } });
       Alert.alert(r.repeated ? 'Already recorded' : 'Visit recorded', `${r.shop_name ?? 'Shop'}${r.distance_m != null ? ` · ${Math.round(r.distance_m)} m from the pinned location` : ''}`);
-      qc.invalidateQueries({ queryKey: ['/field/today'] });
+      qc.invalidateQueries({ queryKey: ['/field/today'] }); qc.invalidateQueries({ queryKey: ['/field/my-visits'] });
     } catch (e: any) { Alert.alert('Visit not recorded', e.message); }
   }
 
@@ -44,6 +45,17 @@ export default function Today() {
             ))}
           </Card>
         ))}
+      {!!mine.data?.visits?.length && (<>
+        <H2>My recent visits</H2>
+        <Card>
+          {mine.data.visits.slice(0, 20).map((v: any) => (
+            <Row key={v.id} style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+              <Body style={{ flex: 1 }}>{v.shop_name}</Body>
+              <Muted>{new Date(v.visited_at).toLocaleString()}</Muted>
+            </Row>
+          ))}
+        </Card>
+      </>)}
     </Screen>
   );
 }

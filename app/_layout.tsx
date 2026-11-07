@@ -64,7 +64,7 @@ const TITLES: Record<string, string> = {
   import: 'Import products', expiring: 'Expiring stock', commission: 'Platform commission', einvoice: 'GST e-invoice',
   'field/index': 'Field', 'field/shop': 'Shop location', 'field/today': "Today's route",
   'console/sub-payments': 'Subscription payments', 'console/onboarding': 'Onboarding payments', 'console/plans': 'Plans', 'console/settings': 'Company settings',
-  'console/audit': 'Audit trail', 'console/roles': 'Roles', 'console/distributors': 'Distributors', 'console/taxonomy': 'Categories & brands',
+  'console/audit': 'Audit trail', 'console/visits': 'Visit history', 'console/roles': 'Roles', 'console/distributors': 'Distributors', 'console/taxonomy': 'Categories & brands',
   'console/commission': 'Commission', 'console/reconciliation': 'Reconciliation', 'business-profile': 'Business profile', 'retailer-manage': 'Retailer',
   'reports-export': 'Export reports', 'business-summary': 'Business summary', 'desk/stats': 'Support performance', 'desk/settings': 'SLA & categories', recon: 'Reconciliation', 'console/products': 'Product approvals', 'console/user-edit': 'Edit details', 'console/distributor-admin': 'Distributor settings', 'console/commission-rules': 'Commission rules', 'console/settlement': 'Settlement', 'console/commission-entries': 'Commission entries', 'product-audience': 'Product visibility',
 };

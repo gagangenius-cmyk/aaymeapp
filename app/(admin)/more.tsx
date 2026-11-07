@@ -28,6 +28,7 @@ export default function AdminMore() {
       <MenuLink icon="download" label="Export reports (CSV / Excel)" onPress={() => router.push({ pathname: '/reports-export', params: { base: '/admin' } })} />
       <MenuLink icon="cube" label="Stock vs ledger check" onPress={() => router.push({ pathname: '/recon', params: { path: '/admin/inventory/reconciliation' } })} />
       <MenuLink icon="list" label="Audit trail" onPress={go('/console/audit')} />
+      <MenuLink icon="qr-code" label="Visit history (QR scans)" onPress={go('/console/visits')} />
       <MenuLink icon="headset" label="Support desk" onPress={go('/desk')} />
       <MenuLink icon="lock-closed" label="Security & sessions" onPress={go('/security')} />
     </AccountScreen>
