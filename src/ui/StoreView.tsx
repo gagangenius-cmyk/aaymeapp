@@ -3,6 +3,7 @@ import { AppText as Text } from './AppText';
 import { Linking, Modal, Pressable, ScrollView, TextInput, View, useWindowDimensions } from 'react-native';
 import { Alert } from './alert';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { api, mediaUrl, newKey } from '../lib/api';
@@ -40,6 +41,7 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
   const [detailId, setDetailId] = useState<number | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const inset = useContext(TabInsetContext);
+  const safeBottom = useSafeAreaInsets().bottom;
   const orderKey = useRef(newKey()); // one key per checkout: a double tap or retry returns the same order instead of a second one
 
   const lines = (products.data?.products ?? []).filter((p: any) => cart[p.id] > 0);
@@ -162,7 +164,7 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
       <Modal visible={cartOpen} animationType="slide" transparent onRequestClose={() => setCartOpen(false)}>
         <View style={{ flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' }}>
           <Pressable style={{ flex: 1 }} onPress={() => setCartOpen(false)} />
-          <View style={{ backgroundColor: colors.bg, borderTopLeftRadius: 12, borderTopRightRadius: 12, maxHeight: '90%', padding: 16, gap: 12 }}>
+          <View style={{ backgroundColor: colors.bg, borderTopLeftRadius: 12, borderTopRightRadius: 12, maxHeight: '90%', padding: 16, paddingBottom: 16 + safeBottom, gap: 12 }}>
             <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
               <H2>Your cart</H2>
               <Pressable onPress={() => setCartOpen(false)} hitSlop={10}><Ionicons name="close" size={24} color={colors.text} /></Pressable>
@@ -258,6 +260,7 @@ function ProductCard({ p, qty, onOpen, onQty }: { p: any; qty: number; onOpen: (
 /** Product page: swipeable photos, price, description and quantity breaks. */
 function DetailSheet({ p, qty, onClose, onQty, onGoCart }: { p: any; qty: number; onClose: () => void; onQty: (p: any, n: number) => void; onGoCart: () => void }) {
   const { width } = useWindowDimensions();
+  const safe = useSafeAreaInsets();
   const [page, setPage] = useState(0);
   if (!p) return null;
   const max = p.available_qty ?? p.stock_qty; const out = max <= 0;
@@ -315,7 +318,7 @@ function DetailSheet({ p, qty, onClose, onQty, onGoCart }: { p: any; qty: number
               })()}
             </View>
           </ScrollView>
-          <View style={{ padding: 12, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface }}>
+          <View style={{ padding: 12, paddingBottom: 12 + safe.bottom, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface }}>
             {out ? <Chip label="Out of stock" tone="danger" /> : qty > 0 ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <View style={{ flex: 1 }}><Stepper p={p} qty={qty} max={max} onChange={(n) => onQty(p, n)} /></View>
