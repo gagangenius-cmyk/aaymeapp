@@ -63,6 +63,7 @@ export default function Catalog() {
             <Muted>{inr(p.price)}/{p.unit} · GST {p.gst_rate_bps / 100}% · MOQ {p.min_order_qty}</Muted>
             <Muted style={{ color: p.stock_qty <= 0 ? '#D93A55' : undefined }}>Stock {p.stock_qty}{p.reserved_qty ? ` (${p.reserved_qty} reserved)` : ''}{p.is_active ? '' : ' · hidden'}</Muted>
             {p.review_note ? <Muted>Reviewer: {p.review_note}</Muted> : null}
+            {!selecting && <Row><Button small variant="ghost" title="Edit" onPress={() => router.push({ pathname: '/product-form', params: { id: String(p.id) } })} /></Row>}
           </Card>
         ))}
       <PromptModal {...prompt.props} />
