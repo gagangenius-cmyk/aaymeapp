@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useGet } from '../../src/lib/hooks';
-import { Body, Card, Chip, Empty, ErrorBox, Field, H1, Loading, Muted, Row, Screen } from '../../src/ui/kit';
+import { Body, Button, Card, Chip, Empty, ErrorBox, Field, H1, Loading, Muted, Row, Screen } from '../../src/ui/kit';
 
-/** Employee: the distributor's products. Tap one to choose who can see it (everyone, only your retailers, or chosen pincodes). */
+/** Employee: the distributor's products. Tap one to edit it, or use "Who can see" to limit it to your retailers or chosen pincodes. */
 export default function EmployeeProducts() {
   const router = useRouter();
   const [text, setText] = useState('');
@@ -14,9 +14,10 @@ export default function EmployeeProducts() {
       <Field label="Search" value={text} onChangeText={setText} placeholder="Name, brand, SKU or barcode" />
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : !q.data.products.length ? <Empty text="No products" /> :
         q.data.products.map((p: any) => (
-          <Card key={p.id} onPress={() => router.push({ pathname: '/product-audience', params: { id: String(p.id), name: p.display_name } })}>
+          <Card key={p.id} onPress={() => router.push({ pathname: '/product-form', params: { id: String(p.id) } })}>
             <Row style={{ justifyContent: 'space-between' }}><Body style={{ fontWeight: '700', flex: 1 }}>{p.display_name}</Body>{p.private_to > 0 && <Chip label={`Limited to ${p.private_to}`} tone="warn" />}</Row>
             <Muted>Stock {p.stock_qty} · {p.is_active ? 'visible' : 'hidden'}</Muted>
+            <Row><Button small variant="ghost" title="Who can see" onPress={() => router.push({ pathname: '/product-audience', params: { id: String(p.id), name: p.display_name } })} /></Row>
           </Card>
         ))}
     </Screen>

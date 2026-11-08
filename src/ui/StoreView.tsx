@@ -43,7 +43,8 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
   const orderKey = useRef(newKey()); // one key per checkout: a double tap or retry returns the same order instead of a second one
 
   const lines = (products.data?.products ?? []).filter((p: any) => cart[p.id] > 0);
-  const total = lines.reduce((s: number, p: any) => s + unitFor(p, cart[p.id]) * cart[p.id] * (1 + p.gst_rate_bps / 10000), 0);
+  // GST is not added in the cart: the server calculates it when the order goes to payment
+  const total = lines.reduce((s: number, p: any) => s + unitFor(p, cart[p.id]) * cart[p.id], 0);
   const savings = lines.reduce((s: number, p: any) => s + (p.mrp && Number(p.mrp) > unitFor(p, cart[p.id]) ? (Number(p.mrp) - unitFor(p, cart[p.id])) * cart[p.id] : 0), 0);
   const subtotal = lines.reduce((s: number, p: any) => s + unitFor(p, cart[p.id]) * cart[p.id], 0);
   const setQty = (p: any, qty: number) => setCart((c) => ({ ...c, [p.id]: Math.max(0, qty) }));
@@ -172,7 +173,7 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
                   <ProductImage uri={mediaUrl(p.image_url)} size={56} />
                   <View style={{ flex: 1, gap: 2 }}>
                     <Text numberOfLines={2} style={{ color: colors.text, fontSize: 14, fontWeight: '700' }}>{p.display_name}</Text>
-                    <Muted>{inr(unitFor(p, cart[p.id]) * cart[p.id] * (1 + p.gst_rate_bps / 10000))}</Muted>
+                    <Muted>{inr(unitFor(p, cart[p.id]) * cart[p.id])}</Muted>
                   </View>
                   <View style={{ width: 96 }}><Stepper p={p} qty={cart[p.id]} max={p.available_qty ?? p.stock_qty} onChange={(n) => setQty(p, n)} /></View>
                 </View>
@@ -185,7 +186,7 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
             <View style={{ backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, padding: 12, gap: 6 }}>
               <Text style={{ color: colors.muted, fontSize: 12, fontWeight: '800', letterSpacing: 0.8 }}>PRICE DETAILS</Text>
               <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}><Muted>{`Price (${lines.length} ${lines.length === 1 ? 'item' : 'items'})`}</Muted><Body>{inr(subtotal)}</Body></Row>
-              <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}><Muted>GST</Muted><Body>{inr(total - subtotal)}</Body></Row>
+              <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}><Muted>GST</Muted><Body>Added at payment</Body></Row>
               <View style={{ height: 1, backgroundColor: colors.border }} />
               <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
                 <Text style={{ color: colors.text, fontWeight: '800', fontSize: 16 }}>Total amount</Text>
