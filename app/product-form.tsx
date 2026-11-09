@@ -18,7 +18,9 @@ const UNITS = ['pcs', 'kg', 'g', 'ltr', 'box', 'carton', 'pack'];
 export default function ProductForm() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const router = useRouter();
-  const existing = useGet<any>(`/catalog/${id}`, undefined, !!id);
+  const detail = useGet<any>(`/catalog/${id}`, undefined, !!id);
+  // the server wraps the product: { product, stock_history, batches, price_history }
+  const existing = { ...detail, data: detail.data?.product ?? detail.data };
   const tax = useGet<any>('/catalog/taxonomy');
   const [f, setF] = useState<Record<string, string>>({ unit: 'pcs', min_order_qty: '1', low_stock_threshold: '10', stock_qty: '0' });
   const [gst, setGst] = useState(0);
@@ -37,6 +39,17 @@ export default function ProductForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
 
+  // categories as a tree: main categories first; once one is chosen, its sub-categories appear on the next row
+  const cats: any[] = tax.data?.categories ?? [];
+  const byCatId = new Map<number, any>(cats.map((c) => [c.id, c]));
+  const kids = (parent: number | null) => cats.filter((c) => (c.parent_id && byCatId.has(c.parent_id) ? c.parent_id : null) === parent);
+  const chain: number[] = [];
+  for (let n: any = catId !== null ? byCatId.get(catId) : null, hops = 0; n && hops < 8; n = n.parent_id ? byCatId.get(n.parent_id) : null, hops++) chain.unshift(n.id);
+  const levels: any[][] = [kids(null)];
+  for (const id of chain) { const k = kids(id); if (k.length) levels.push(k); }
+  const [newSub, setNewSub] = useState('');
+  const addSub = useSend<{ name: string; parent_id: number }, any>('/catalog/categories', { invalidate: ['/catalog/taxonomy'], onDone: (c) => { setNewSub(''); setCatId(c.id); toast.success('Sub-category added'); } });
+
   /** After a scan: fill the empty fields from what is known about this barcode, never overwriting what was already typed. */
   const onScanned = async (code: string) => {
     setScan(false); set('barcode')(code);
@@ -50,13 +63,19 @@ export default function ProductForm() {
       const g = r.suggestion; setImportImgs(g?.image_urls?.length ? g.image_urls : g?.image_url ? [g.image_url] : []); if (!g) { toast.info('No details found for this barcode. Enter them by hand.'); return; }
       setF((x) => ({ ...x, name: x.name || g.name || '', mrp: x.mrp || (g.mrp ?? ''), hsn: x.hsn || g.hsn || '', description: x.description || g.description || '', unit: g.unit && UNITS.includes(g.unit) && (x.unit === 'pcs' || !x.unit) ? g.unit : x.unit }));
       setF((x) => ({ ...x, highlights: x.highlights || (g.highlights ?? []).join('\n'), manufacturer: x.manufacturer || g.manufacturer || '', country_of_origin: x.country_of_origin || g.country_of_origin || '' }));
+      if (g.pack_size) {
+        // "500 g", "1.5 kg", "250 ml", "1 l": fill the variant label and the weight (grams; millilitres counted as grams)
+        const m = String(g.pack_size).trim().match(/^([\d.,]+)\s*(kg|g|gm|gms|l|ltr|ml)\b/i);
+        const grams = m ? Math.round(Number(m[1].replace(',', '.')) * ({ kg: 1000, l: 1000, ltr: 1000 } as Record<string, number>)[m[2].toLowerCase()] || Number(m[1].replace(',', '.')) * 1) : null;
+        setF((x) => ({ ...x, variant_label: x.variant_label || String(g.pack_size), weight_g: x.weight_g || (grams ? String(grams) : '') }));
+      }
       if (g.pack_size) setSpecs((cur) => (cur.some((r) => r.key.toLowerCase() === 'pack size') ? cur : [...cur, { key: 'Pack size', value: g.pack_size }]));
       if (g.gst_rate_bps != null && GST.includes(g.gst_rate_bps / 100)) setGst(g.gst_rate_bps / 100);
       const byName = (list: any[] | undefined, n?: string | null) => (n ? list?.find((i) => i.name.toLowerCase() === n.toLowerCase()) : undefined);
       const c = byName(tax.data?.categories, g.category); if (c && catId === null) setCatId(c.id); else if (!c && g.category) setScanCategory(g.category);
       const b = byName(tax.data?.brands, g.brand); if (b && brandId === null) setBrandId(b.id); else if (!b && g.brand) setScanBrand(g.brand);
       toast.success(`Details filled in${g.image_urls?.length ? ` with ${g.image_urls.length} photo${g.image_urls.length > 1 ? 's' : ''}` : ''}. Enter your price and save.`);
-    } catch { /* the barcode is kept; the details can be typed */ }
+    } catch { toast.info('Could not look up this barcode right now. Enter the details by hand.'); }
   };
 
   useEffect(() => {
@@ -152,7 +171,20 @@ export default function ProductForm() {
       </Row>
       <Field label="Description" value={f.description} onChangeText={set('description')} multiline style={{ minHeight: 60 }} autoCapitalize="sentences" />
 
-      {!!tax.data?.categories?.length && (<><H2>Category</H2><Row>{tax.data.categories.map((c: any) => <Chip key={c.id} label={c.name} active={catId === c.id} onPress={() => setCatId(c.id)} />)}</Row></>)}
+      {!!cats.length && (<>
+        <H2>Category</H2>
+        {levels.map((lvl, n) => <Row key={n}>{lvl.map((c: any) => <Chip key={c.id} label={c.name} active={chain.includes(c.id)} onPress={() => setCatId(c.id)} />)}</Row>)}
+        {catId !== null && (
+          <Row>
+            <Field label={`New sub-category under ${byCatId.get(catId)?.name ?? 'this category'}`} value={newSub} onChangeText={setNewSub} autoCapitalize="words" style={{ minWidth: 200 }} />
+            <Button small variant="ghost" title="Add" disabled={!newSub.trim()} loading={addSub.isPending} onPress={() => addSub.mutate({ name: newSub.trim(), parent_id: catId })} />
+          </Row>
+        )}
+      </>)}
+      <Row>
+        <Field label="Brand name" value={scanBrand} onChangeText={(v) => { setScanBrand(v); if (v) setBrandId(null); }} autoCapitalize="words" style={{ minWidth: 150 }} />
+        <Field label="Category name" value={scanCategory} onChangeText={(v) => { setScanCategory(v); if (v) setCatId(null); }} autoCapitalize="words" style={{ minWidth: 150 }} />
+      </Row>
       {!!tax.data?.brands?.length && (<><H2>Brand</H2><Row>{tax.data.brands.map((b: any) => <Chip key={b.id} label={b.name} active={brandId === b.id} onPress={() => setBrandId(b.id)} />)}</Row></>)}
 
       <H2>Quantity prices</H2>

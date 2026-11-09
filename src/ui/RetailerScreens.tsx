@@ -15,6 +15,13 @@ export function RetailerList({ createRoute }: { createRoute: string }) {
   const q = useGet<any>('/distributor/retailers', { mine: role === 'employee' ? '1' : '0' });
   const [phone, setPhone] = useState('');
   const invite = useSend<{ phone: string }>('/distributor/retailers', { invalidate: ['/distributor/retailers'], onDone: () => { setPhone(''); Alert.alert('Request sent', 'If a retailer with this number exists, they have been asked to accept.'); } });
+  const [selecting, setSelecting] = useState(false);
+  const [picked, setPicked] = useState<number[]>([]);
+  const [fromEmp, setFromEmp] = useState<number | null>(null);
+  const team = useGet<any>('/distributor/employees', undefined, role === 'distributor');
+  const members = (team.data?.employees ?? []).filter((e: any) => e.is_active !== 0 && e.is_active !== false);
+  const toggle = (id: number) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const bulk = useSend<{ retailer_ids?: number[]; from_employee_id?: number; employee_id: number | null }>('/distributor/retailers/bulk-manager', { method: 'PUT', invalidate: ['/distributor/retailers', '/distributor/employees'], onDone: (r: any) => { setPicked([]); setSelecting(false); setFromEmp(null); Alert.alert('Moved', `${r.moved} retailer${r.moved === 1 ? '' : 's'} moved.`); } });
   const cancel = useSend<{ id: number }>((b) => `/distributor/retailers/${b.id}`, { method: 'DELETE', invalidate: ['/distributor/retailers'] });
   return (
     <Screen onRefresh={q.refetch} refreshing={q.isRefetching}>
@@ -26,10 +33,31 @@ export function RetailerList({ createRoute }: { createRoute: string }) {
           <Row><Field label="Retailer phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" maxLength={10} style={{ minWidth: 170 }} /><Button small variant="ghost" title="Invite" disabled={phone.length !== 10} loading={invite.isPending} onPress={() => invite.mutate({ phone })} /></Row>
         </Card>
       )}
+      {role === 'distributor' && (
+        <Row>
+          <Button small variant="ghost" title={selecting ? 'Done' : 'Select many'} onPress={() => { setSelecting(!selecting); setPicked([]); setFromEmp(null); }} />
+          {selecting && <Button small variant="ghost" title="Select all" onPress={() => setPicked((q.data?.retailers ?? []).map((r: any) => r.id))} />}
+        </Row>
+      )}
+      {selecting && (
+        <Card>
+          <Muted>{picked.length} selected. Move them under:</Muted>
+          <Row>
+            <Chip label="Me (distributor)" onPress={() => picked.length && bulk.mutate({ retailer_ids: picked, employee_id: null })} />
+            {members.map((e: any) => <Chip key={e.id} label={e.name} onPress={() => picked.length && bulk.mutate({ retailer_ids: picked, employee_id: e.id })} />)}
+          </Row>
+          <Muted>Or hand over everything one team member looks after:</Muted>
+          <Row>{members.map((e: any) => <Chip key={e.id} label={`All of ${e.name}`} active={fromEmp === e.id} onPress={() => setFromEmp(fromEmp === e.id ? null : e.id)} />)}</Row>
+          {fromEmp !== null && <Row>
+            <Chip label="→ Me (distributor)" onPress={() => bulk.mutate({ from_employee_id: fromEmp, employee_id: null })} />
+            {members.filter((e: any) => e.id !== fromEmp).map((e: any) => <Chip key={e.id} label={`→ ${e.name}`} onPress={() => bulk.mutate({ from_employee_id: fromEmp, employee_id: e.id })} />)}
+          </Row>}
+        </Card>
+      )}
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : !q.data.retailers.length ? <Empty text="No retailers yet" /> :
         q.data.retailers.map((r: any) => (
-          <Card key={r.id} onPress={() => router.push({ pathname: '/retailer-manage', params: { retailer_id: String(r.id), name: r.shop_name } })}>
-            <Body style={{ fontWeight: '700' }}>{r.shop_name}</Body>
+          <Card key={r.id} style={picked.includes(r.id) ? { borderColor: '#2874F0' } : undefined} onPress={() => (selecting ? toggle(r.id) : router.push({ pathname: '/retailer-manage', params: { retailer_id: String(r.id), name: r.shop_name } }))}>
+            <Body style={{ fontWeight: '700' }}>{selecting ? (picked.includes(r.id) ? '✓ ' : '○ ') : ''}{r.shop_name}</Body>
             <Muted>{r.name} · {r.phone} · {r.pincode}</Muted>
             <Muted>Managed by {r.managed_by_name ?? 'distributor'} · due {inr(Number(r.balance_due_paise) / 100)}{r.category_names ? ` · ${r.category_names}` : ''}</Muted>
           </Card>

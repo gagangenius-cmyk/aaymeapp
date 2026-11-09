@@ -32,6 +32,7 @@ export default function Catalog() {
       <H1>Products</H1>
       <Row>
         <Button title="Add product" onPress={() => router.push('/product-form')} />
+        <Button variant="ghost" title="Bulk upload" onPress={() => router.push('/import')} />
         <Button variant="ghost" title={selecting ? 'Done' : 'Select'} onPress={() => { setSelecting(!selecting); setPicked([]); }} />
       </Row>
       {selecting && (

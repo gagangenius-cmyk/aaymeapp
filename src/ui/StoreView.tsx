@@ -251,11 +251,13 @@ function ProductCard({ p, qty, onOpen, onQty }: { p: any; qty: number; onOpen: (
           </View>
           {!!p.brand && <Text numberOfLines={1} style={{ color: colors.muted, fontSize: 12, fontWeight: '700' }}>{p.brand}</Text>}
           <Text numberOfLines={2} style={{ color: colors.text, fontSize: 13.5, minHeight: 36 }}>{p.display_name}</Text>
-          <Row style={{ gap: 6, flexWrap: 'nowrap' }}>
-            {p.discount_pct > 0 && <Text style={{ color: colors.green, fontSize: 13, fontWeight: '800' }}>{`↓${p.discount_pct}%`}</Text>}
-            {hasMrp ? <Muted style={{ textDecorationLine: 'line-through', fontSize: 12.5 }}>{inr(p.mrp)}</Muted> : null}
-            <Text style={{ color: colors.text, fontSize: 16, fontWeight: '800' }}>{inr(p.price)}</Text>
-          </Row>
+          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={{ color: colors.text, fontSize: 16, fontWeight: '800' }}>{inr(p.price)}</Text>
+          {(p.discount_pct > 0 || hasMrp) && (
+            <Row style={{ gap: 6, flexWrap: 'nowrap' }}>
+              {p.discount_pct > 0 && <Text style={{ color: colors.green, fontSize: 13, fontWeight: '800' }}>{`↓${p.discount_pct}%`}</Text>}
+              {hasMrp ? <Muted numberOfLines={1} style={{ textDecorationLine: 'line-through', fontSize: 12.5, flexShrink: 1 }}>{inr(p.mrp)}</Muted> : null}
+            </Row>
+          )}
           <Muted numberOfLines={1} style={{ fontSize: 11.5 }}>{`/${p.unit} · MOQ ${p.min_order_qty}`}</Muted>
           {low ? <Text style={{ color: colors.warn, fontSize: 12, fontWeight: '700' }}>{`Only ${max} left`}</Text> : null}
         </Pressable>

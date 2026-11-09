@@ -1,6 +1,15 @@
 /** Second half of the Hindi dictionary (screens added after the first pass). Merged into HI in i18n.tsx. Technical codes (GSTIN, IFSC, UTR, CSV, SKU) are intentionally left in English: users know them by those names. */
 export const HI_MORE: Record<string, string> = {
   'Highlights (one per line, up to 8)': 'मुख्य बातें (हर लाइन में एक, अधिकतम 8)', 'Value': 'मान', 'Add specification': 'स्पेसिफिकेशन जोड़ें', 'Country of origin': 'उत्पत्ति का देश', 'Weight (g)': 'वज़न (ग्राम)', 'Length (cm)': 'लंबाई (सेमी)', 'Width (cm)': 'चौड़ाई (सेमी)', 'Height (cm)': 'ऊंचाई (सेमी)', 'Shelf life (days)': 'शेल्फ लाइफ (दिन)', 'Warranty (months)': 'वारंटी (महीने)', 'Return window (days)': 'रिटर्न अवधि (दिन)', 'Search tags (comma separated)': 'सर्च टैग (कॉमा से अलग)', 'Product page details': 'प्रोडक्ट पेज की जानकारी', 'Specifications': 'स्पेसिफिकेशन',
+  'Brand name': 'ब्रांड का नाम', 'Category name': 'कैटेगरी का नाम', 'Could not look up this barcode right now. Enter the details by hand.': 'अभी इस बारकोड की जानकारी नहीं मिल पाई। विवरण हाथ से भरें।',
+  'Select all': 'सभी चुनें',
+  'Or move everything one employee looks after to another:': 'या एक कर्मचारी के सभी डिस्ट्रीब्यूटर दूसरे कर्मचारी को दें:',
+  'Prices include GST': 'दाम में GST शामिल है',
+  'Share error report (CSV)': 'गलतियों की रिपोर्ट शेयर करें (CSV)',
+  'Me (distributor)': 'मैं (डिस्ट्रीब्यूटर)',
+  '→ Me (distributor)': '→ मैं (डिस्ट्रीब्यूटर)',
+  'Or hand over everything one team member looks after:': 'या एक टीम सदस्य के सभी रिटेलर दूसरे को दें:',
+  'Bulk upload': 'एक साथ कई प्रोडक्ट अपलोड करें',
   'Photos are uploaded when you tap Add product. The first one is the cover.': 'फोटो "Add product" दबाने पर अपलोड होंगी। पहली फोटो कवर होगी।',
   'Search for products, brands and more': 'प्रोडक्ट, ब्रांड और बहुत कुछ खोजें', 'GST': 'जीएसटी', 'Scan barcode': 'बारकोड स्कैन करें',
   '% off': '% छूट', '1-30 days': '1-30 दिन', '1. Get the template': '1. टेम्पलेट लें', '2. Choose your CSV': '2. अपनी CSV चुनें', '6-digit code': '6 अंकों का कोड',
