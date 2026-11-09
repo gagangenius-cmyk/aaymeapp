@@ -13,6 +13,7 @@ export default function RetailerAccount() {
     <AccountScreen>
       <MenuLink icon="chatbubbles" label="Chat with distributors" badge={unread} onPress={go('/chat')} />
       <MenuLink icon="location" label="Shop location & visit QR" onPress={go('/field/shop')} />
+      <MenuLink icon="images" label="Visit records & photos" onPress={go('/field/records')} />
       <MenuLink icon="alert-circle" label="My khata disputes" onPress={go('/disputes')} />
       <MenuLink icon="return-down-back" label="My returns" onPress={go('/returns')} />
       <MenuLink icon="help-buoy" label="Support" onPress={go('/support')} />

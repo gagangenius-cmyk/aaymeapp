@@ -16,6 +16,7 @@ export default function EmployeeAccount() {
           onChange={(v) => { setAvailable(v); setAvail.mutate({ is_available: v }, { onError: () => setAvailable(!v) }); }} />
       </Card>
       <MenuLink icon="map" label="Shops near me" onPress={() => router.push('/field')} />
+      <MenuLink icon="images" label="Field records & photos" onPress={() => router.push('/field/records')} />
       <MenuLink icon="wallet" label="Record a cash collection" onPress={() => router.push('/(employee)/retailers')} />
     </AccountScreen>
   );

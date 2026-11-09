@@ -62,7 +62,7 @@ const TITLES: Record<string, string> = {
   'desk/index': 'Support desk', 'desk/[id]': 'Ticket', 'staff-commissions': 'Commission report', 'pricing/index': 'Price lists', 'pricing/[id]': 'Price list',
   'inventory/index': 'Inventory', 'inventory/move': 'Stock move', 'inventory/movements': 'Stock movements', 'retailer-ledger': 'Khata', disputes: 'Disputes',
   import: 'Import products', expiring: 'Expiring stock', commission: 'Platform commission', einvoice: 'GST e-invoice',
-  'field/index': 'Field', 'field/shop': 'Shop location', 'field/today': "Today's route",
+  'field/index': 'Field', 'field/shop': 'Shop location', 'field/today': "Today's route", 'field/log': 'Record at shop', 'field/records': 'Field records',
   'console/sub-payments': 'Subscription payments', 'console/onboarding': 'Onboarding payments', 'console/plans': 'Plans', 'console/settings': 'Company settings',
   'console/audit': 'Audit trail', 'console/visits': 'Visit history', 'console/roles': 'Roles', 'console/distributors': 'Distributors', 'console/taxonomy': 'Categories & brands',
   'console/commission': 'Commission', 'console/reconciliation': 'Reconciliation', 'business-profile': 'Business profile', 'retailer-manage': 'Retailer',

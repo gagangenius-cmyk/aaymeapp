@@ -13,7 +13,7 @@ import { SearchBar } from './SearchBar';
 import { TabInsetContext } from './tabInset';
 import { tr } from '../lib/i18n';
 import { useGet, useSend } from '../lib/hooks';
-import { unitFor } from '../lib/pricing';
+import { asShopProduct, lineTotal, unitFor } from '../lib/pricing';
 import { colors, radius } from '../lib/theme';
 import { Body, Button, Card, Chip, Empty, ErrorBox, Field, H2, inr, Loading, Muted, Row } from './kit';
 
@@ -33,10 +33,14 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
   const [ownText, setOwnText] = useState('');
   const text = query ?? ownText; const setText = onQuery ?? setOwnText;
   const [category, setCategory] = useState('');
-  const products = useGet<any>(`/retailer/stores/${id}/products`, { q: text.trim() || undefined, category: category || undefined, limit: 100 });
+  const raw = useGet<any>(`/retailer/stores/${id}/products`, { q: text.trim() || undefined, category: category || undefined, limit: 100 });
+  // every price the shopper sees includes GST (the invoice shows the split)
+  const shown = React.useMemo(() => (raw.data ? { ...raw.data, products: (raw.data.products ?? []).map(asShopProduct) } : raw.data), [raw.data]);
+  const products = { ...raw, data: shown } as typeof raw;
   const makePrimary = useSend<{ distributor_id: number }>('/retailer/primary', { method: 'PUT', invalidate: ['/retailer/stores', `/retailer/stores/${id}`], success: 'Now your main distributor' });
   const [cart, setCart] = useState<Record<number, number>>({});
   const [cod, setCod] = useState(false);
+  const [plainBill, setPlainBill] = useState(false);   // a shopkeeper without GST can ask for a plain bill instead of a GST bill
   const [busy, setBusy] = useState(false);
   const [detailId, setDetailId] = useState<number | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
@@ -45,10 +49,10 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
   const orderKey = useRef(newKey()); // one key per checkout: a double tap or retry returns the same order instead of a second one
 
   const lines = (products.data?.products ?? []).filter((p: any) => cart[p.id] > 0);
-  // GST is not added in the cart: the server calculates it when the order goes to payment
-  const total = lines.reduce((s: number, p: any) => s + unitFor(p, cart[p.id]) * cart[p.id], 0);
+  // prices already include GST, so the cart total is simply rate x quantity (the invoice shows the split)
+  const total = lines.reduce((s: number, p: any) => s + lineTotal(p, cart[p.id]), 0);
   const savings = lines.reduce((s: number, p: any) => s + (p.mrp && Number(p.mrp) > unitFor(p, cart[p.id]) ? (Number(p.mrp) - unitFor(p, cart[p.id])) * cart[p.id] : 0), 0);
-  const subtotal = lines.reduce((s: number, p: any) => s + unitFor(p, cart[p.id]) * cart[p.id], 0);
+  const subtotal = total;
   const setQty = (p: any, qty: number) => setCart((c) => ({ ...c, [p.id]: Math.max(0, qty) }));
 
   const deals = text.trim() || category ? [] : (products.data?.products ?? []).filter((p: any) => p.discount_pct > 0 && (p.available_qty ?? p.stock_qty) > 0).slice(0, 10);
@@ -69,7 +73,7 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
   async function placeOrder() {
     setBusy(true);
     try {
-      const r = await api('/orders', { body: { distributor_id: id, payment_method: cod ? 'cod' : 'credit', items: lines.map((p: any) => ({ product_id: p.id, qty: cart[p.id] })) }, idempotent: orderKey.current });
+      const r = await api('/orders', { body: { distributor_id: id, payment_method: cod ? 'cod' : 'credit', bill_type: plainBill ? 'plain' : 'gst', items: lines.map((p: any) => ({ product_id: p.id, qty: cart[p.id] })) }, idempotent: orderKey.current });
       setCart({}); setCartOpen(false); orderKey.current = newKey();
       qc.invalidateQueries({ queryKey: ['/orders'] }); qc.invalidateQueries({ queryKey: ['/retailer/stores'] });
       router.push({ pathname: '/order/[id]', params: { id: String(r.order.id) } });
@@ -175,7 +179,7 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
                   <ProductImage uri={mediaUrl(p.image_url)} size={56} />
                   <View style={{ flex: 1, gap: 2 }}>
                     <Text numberOfLines={2} style={{ color: colors.text, fontSize: 14, fontWeight: '700' }}>{p.display_name}</Text>
-                    <Muted>{inr(unitFor(p, cart[p.id]) * cart[p.id])}</Muted>
+                    <Muted>{inr(lineTotal(p, cart[p.id]))}</Muted>
                   </View>
                   <View style={{ width: 96 }}><Stepper p={p} qty={cart[p.id]} max={p.available_qty ?? p.stock_qty} onChange={(n) => setQty(p, n)} /></View>
                 </View>
@@ -185,10 +189,14 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
               <Chip label="Khata (credit)" active={!cod} onPress={() => setCod(false)} />
               {s.accepts_cod && <Chip label="Cash on delivery" active={cod} onPress={() => setCod(true)} />}
             </Row>
+            <Row>
+              <Chip label="GST bill" active={!plainBill} onPress={() => { setPlainBill(false); orderKey.current = newKey(); }} />
+              <Chip label="Plain bill (no GST)" active={plainBill} onPress={() => { setPlainBill(true); orderKey.current = newKey(); }} />
+            </Row>
             <View style={{ backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, padding: 12, gap: 6 }}>
               <Text style={{ color: colors.muted, fontSize: 12, fontWeight: '800', letterSpacing: 0.8 }}>PRICE DETAILS</Text>
               <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}><Muted>{`Price (${lines.length} ${lines.length === 1 ? 'item' : 'items'})`}</Muted><Body>{inr(subtotal)}</Body></Row>
-              <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}><Muted>GST</Muted><Body>Added at payment</Body></Row>
+              <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}><Muted>GST</Muted><Body>Included in price</Body></Row>
               <View style={{ height: 1, backgroundColor: colors.border }} />
               <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
                 <Text style={{ color: colors.text, fontWeight: '800', fontSize: 16 }}>Total amount</Text>
@@ -287,7 +295,7 @@ function DetailSheet({ p, qty, onClose, onQty, onGoCart }: { p: any; qty: number
                 {hasMrp ? <Muted style={{ textDecorationLine: 'line-through', fontSize: 15 }}>{inr(p.mrp)}</Muted> : null}
                 <Text style={{ color: colors.text, fontSize: 24, fontWeight: '800' }}>{inr(p.price)}</Text>
               </Row>
-              <Muted>{`/${p.unit} · GST ${p.gst_rate_bps / 100}% · MOQ ${p.min_order_qty}`}</Muted>
+              <Muted>{`/${p.unit} · ₹${Number(p.base_price).toFixed(2)} + ${p.gst_rate_bps / 100}% GST · MOQ ${p.min_order_qty}`}</Muted>
               {p.price_note ? <Muted style={{ color: colors.green }}>{p.price_note}</Muted> : null}
               {p.tiers?.length > 0 && (
                 <View style={{ backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, padding: 12, gap: 4 }}>

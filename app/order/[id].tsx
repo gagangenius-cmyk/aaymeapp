@@ -27,7 +27,9 @@ export default function OrderDetail() {
   const team = useGet<any>('/distributor/employees', undefined, role === 'distributor');
   const inv = [`/orders/${id}`, '/orders', '/distributor/deliveries'];
   const move = useSend<{ to: string; items?: { product_id: number; qty: number }[] }>(`/orders/${id}/transition`, { invalidate: inv });
-  const assign = useSend<{ employee_id: number }>(`/orders/${id}/assign`, { invalidate: inv });
+  const assign = useSend<{ employee_id: number; deliver_on?: string }>(`/orders/${id}/assign`, { invalidate: inv });
+  const [day, setDay] = useState(1);   // days from today the delivery should happen on (0 = today)
+  const dateOf = (n: number) => new Date(Date.now() + 5.5 * 3600_000 + n * 86400_000).toISOString().slice(0, 10);
   const [adjusting, setAdjusting] = useState(false);
   const [qty, setQty] = useState<Record<number, number>>({});
   const o = q.data;
@@ -54,14 +56,18 @@ export default function OrderDetail() {
     <Screen onRefresh={q.refetch} refreshing={q.isRefetching}>
       <Card>
         <Row style={{ justifyContent: 'space-between' }}><H2>Order #{o.id}</H2><Chip label={o.status.replace(/_/g, ' ')} tone={STATUS_TONE[o.status]} /></Row>
-        <Muted>{o.retailer_name} → {o.distributor_name}</Muted>
+        <Muted>{o.retailer_name}</Muted>
+        {o.salesperson_name ? <Muted>Sales person: {o.salesperson_name}</Muted> : null}
+        <Muted>Distributor: {o.distributor_name}</Muted>
         <Row>
           <Chip label={cod ? 'Cash on delivery' : 'Khata (credit)'} tone={cod ? 'warn' : undefined} />
           {o.is_out_of_hierarchy && <Chip label="Outside network" />}
           {o.invoice_no ? <Chip label={`Invoice ${o.invoice_no}`} /> : null}
+          <Chip label={o.bill_type === 'plain' ? 'Plain bill (no GST)' : 'GST bill'} />
         </Row>
         <Body style={{ fontWeight: '800', fontSize: 20 }}>{inr(o.total)}</Body>
         {o.is_adjusted && <Muted>Quantities were adjusted when accepting.</Muted>}
+        {o.assigned_employee_name ? <Muted>{o.assigned_employee_kind === 'sales' ? 'Sales person' : 'Delivery person'}: {o.assigned_employee_name}{o.deliver_on ? ` · deliver on ${o.deliver_on}` : ''}</Muted> : null}
         {cod && o.status !== 'delivered' && role !== 'retailer' && <Muted style={{ color: '#C77700' }}>Collect {inr(o.total)} in cash on delivery.</Muted>}
       </Card>
 
@@ -76,9 +82,10 @@ export default function OrderDetail() {
 
       {canAssign && (
         <Card>
-          <Muted>Delivery person{o.assigned_employee_id ? '' : ' (none yet)'}</Muted>
+          <Muted>Who delivers{o.assigned_employee_id ? '' : ' (none yet)'} and on which day</Muted>
+          <Row>{[0, 1, 2, 3].map((n) => <Chip key={n} label={n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : dateOf(n).slice(5)} active={day === n} onPress={() => setDay(n)} />)}</Row>
           <Row>{(team.data?.employees ?? []).filter((e: any) => e.is_active).map((e: any) => (
-            <Chip key={e.id} label={`${e.name}${e.is_available ? '' : ' (leave)'} · ${e.open_orders} open`} active={o.assigned_employee_id === e.id} onPress={() => assign.mutate({ employee_id: e.id })} />
+            <Chip key={e.id} label={`${e.name} (${e.kind === 'delivery' ? 'delivery' : 'sales'})${e.is_available ? '' : ' (leave)'} · ${e.open_orders} open`} active={o.assigned_employee_id === e.id} onPress={() => assign.mutate({ employee_id: e.id, deliver_on: dateOf(day) })} />
           ))}</Row>
         </Card>
       )}

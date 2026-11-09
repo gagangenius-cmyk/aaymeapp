@@ -8,6 +8,7 @@ import { fieldErrors, useGet, useSend } from '../src/lib/hooks';
 import { Scanner, PRODUCT_CODES } from '../src/ui/Scanner';
 import { ProductHistory } from '../src/ui/ProductHistory';
 import { NewProductPhotos, PickedPhoto, ProductAudience, ProductBatches, ProductPhotos } from '../src/ui/ProductExtras';
+import { exclusive, inclusive } from '../src/lib/pricing';
 import { Button, Chip, Field, H2, Muted, Row, Screen, Toggle } from '../src/ui/kit';
 
 const GST = [0, 0.25, 3, 5, 12, 18, 28];
@@ -21,6 +22,7 @@ export default function ProductForm() {
   const tax = useGet<any>('/catalog/taxonomy');
   const [f, setF] = useState<Record<string, string>>({ unit: 'pcs', min_order_qty: '1', low_stock_threshold: '10', stock_qty: '0' });
   const [gst, setGst] = useState(0);
+  const [incl, setIncl] = useState(true);   // the rate is typed with GST included; the price before GST is worked out and shown below it
   const [active, setActive] = useState(true);
   const [catId, setCatId] = useState<number | null>(null);
   const [brandId, setBrandId] = useState<number | null>(null);
@@ -59,14 +61,15 @@ export default function ProductForm() {
 
   useEffect(() => {
     const p = existing.data; if (!p) return;
-    setF({ name: p.name, sku: p.sku ?? '', barcode: p.barcode ?? '', description: p.description ?? '', price: p.price, mrp: p.mrp ?? '', unit: p.unit, hsn: p.hsn ?? '',
+    setF({ name: p.name, sku: p.sku ?? '', barcode: p.barcode ?? '', description: p.description ?? '', price: inclusive(p.price, p.gst_rate_bps).toFixed(2), mrp: p.mrp ?? '', unit: p.unit, hsn: p.hsn ?? '',
       min_order_qty: String(p.min_order_qty), low_stock_threshold: String(p.low_stock_threshold), variant_group: p.variant_group ?? '', variant_label: p.variant_label ?? '',
       highlights: (p.highlights ?? []).join('\n'), tags: (p.tags ?? []).join(', '), manufacturer: p.manufacturer ?? '', country_of_origin: p.country_of_origin ?? '',
       weight_g: p.weight_g == null ? '' : String(p.weight_g), length_cm: p.length_cm == null ? '' : String(p.length_cm), width_cm: p.width_cm == null ? '' : String(p.width_cm), height_cm: p.height_cm == null ? '' : String(p.height_cm),
       shelf_life_days: p.shelf_life_days == null ? '' : String(p.shelf_life_days), warranty_months: p.warranty_months == null ? '' : String(p.warranty_months), return_days: p.return_days == null ? '' : String(p.return_days) });
     setSpecs(p.specs ?? []);
     setGst(p.gst_rate_bps / 100); setActive(p.is_active); setCatId(p.category_id); setBrandId(p.brand_id);
-    setTiers((p.tiers ?? []).map((t: any) => ({ min_qty: String(t.min_qty), price: t.price })));
+    setTiers((p.tiers ?? []).map((t: any) => ({ min_qty: String(t.min_qty), price: inclusive(t.price, p.gst_rate_bps).toFixed(2) })));
+    setIncl(true);
   }, [existing.data?.id]);
 
   const save = useSend<any>(id ? `/catalog/${id}` : '/catalog', { method: id ? 'PATCH' : 'POST', invalidate: ['/catalog', `/catalog/${id}`], success: 'Product saved', onDone: (p) => {
@@ -98,15 +101,23 @@ export default function ProductForm() {
     };
   };
 
+  /** What is stored: the price before GST. In rate-with-GST mode it is worked out from the typed rate. */
+  const base = (v: string) => (incl && v ? exclusive(v, Math.round(gst * 100)).toFixed(2) : v);
+  const switchMode = (toIncl: boolean) => {
+    if (toIncl === incl) return;
+    const bps = Math.round(gst * 100);
+    const conv = (v: string) => (v ? (toIncl ? inclusive(v, bps) : exclusive(v, bps)).toFixed(2) : v);
+    setF((x) => ({ ...x, price: conv(x.price) })); setTiers((t) => t.map((r) => ({ ...r, price: conv(r.price) }))); setIncl(toIncl);
+  };
   const submit = () => {
     setErrors({});
     const opt = (k: string) => (f[k]?.trim() ? { [k]: f[k].trim() } : {});
     save.mutate({
-      name: f.name?.trim(), price: f.price, unit: f.unit, gst_rate_bps: Math.round(gst * 100), min_order_qty: Number(f.min_order_qty), low_stock_threshold: Number(f.low_stock_threshold), is_active: active,
+      name: f.name?.trim(), price: base(f.price), unit: f.unit, gst_rate_bps: Math.round(gst * 100), min_order_qty: Number(f.min_order_qty), low_stock_threshold: Number(f.low_stock_threshold), is_active: active,
       ...opt('sku'), ...opt('barcode'), ...opt('description'), ...opt('hsn'), ...opt('variant_group'), ...opt('variant_label'),
       ...(f.mrp?.trim() ? { mrp: f.mrp.trim() } : id ? { mrp: null } : {}),
       ...(catId ? { category_id: catId } : scanCategory ? { category: scanCategory } : {}), ...(brandId ? { brand_id: brandId } : scanBrand ? { brand: scanBrand } : {}),
-      tiers: tiers.filter((t) => t.min_qty && t.price).map((t) => ({ min_qty: Number(t.min_qty), price: t.price })),
+      tiers: tiers.filter((t) => t.min_qty && t.price).map((t) => ({ min_qty: Number(t.min_qty), price: base(t.price) })),
       ...details(),
       ...(id ? {} : { stock_qty: Number(f.stock_qty || 0) }),
     }, { onError: (e) => setErrors(fieldErrors(e)) });
@@ -116,9 +127,11 @@ export default function ProductForm() {
     <Screen>
       <Field label="Product name" value={f.name} onChangeText={set('name')} autoCapitalize="words" error={errors.name} />
       <Row>
-        <Field label="Price (excl. GST)" value={f.price} onChangeText={set('price')} keyboardType="decimal-pad" error={errors.price} style={{ minWidth: 140 }} />
+        <Field label={incl ? 'Rate (incl. GST)' : 'Price (excl. GST)'} value={f.price} onChangeText={set('price')} keyboardType="decimal-pad" error={errors.price} style={{ minWidth: 140 }} />
         <Field label="MRP (optional)" value={f.mrp} onChangeText={set('mrp')} keyboardType="decimal-pad" error={errors.mrp} style={{ minWidth: 140 }} />
       </Row>
+      <Row><Chip label="Rate includes GST" active={incl} onPress={() => switchMode(true)} /><Chip label="Price before GST" active={!incl} onPress={() => switchMode(false)} /></Row>
+      {!!Number(f.price) && <Muted>{incl ? `Shops see ₹${inclusive(exclusive(f.price, Math.round(gst * 100)), Math.round(gst * 100)).toFixed(2)}: ₹${exclusive(f.price, Math.round(gst * 100)).toFixed(2)} + ${gst}% GST. The invoice shows the split.` : `Shops will see ₹${inclusive(f.price, Math.round(gst * 100)).toFixed(2)} (₹${Number(f.price).toFixed(2)} + ${gst}% GST).`}</Muted>}
       <H2>Unit</H2><Row>{UNITS.map((u) => <Chip key={u} label={u} active={f.unit === u} onPress={() => set('unit')(u)} />)}</Row>
       <H2>GST %</H2><Row>{GST.map((g) => <Chip key={g} label={`${g}%`} active={gst === g} onPress={() => setGst(g)} />)}</Row>
       {!!errors.gst_rate_bps && <Muted>{errors.gst_rate_bps}</Muted>}

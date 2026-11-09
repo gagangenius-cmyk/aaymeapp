@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Linking } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Alert } from '../../src/ui/alert';
 import * as Location from 'expo-location';
 import { useQueryClient } from '@tanstack/react-query';
@@ -13,6 +14,7 @@ const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 /** Employee: today's route, with a QR scan that proves you are standing in the shop. */
 export default function Today() {
   const qc = useQueryClient();
+  const router = useRouter();
   const q = useGet<any>('/field/today');
   const mine = useGet<any>('/field/my-visits', { days: 14 });
   const [scan, setScan] = useState(false);
@@ -31,17 +33,23 @@ export default function Today() {
 
   return (
     <Screen onRefresh={q.refetch} refreshing={q.isRefetching}>
-      <Button title="Scan shop QR" onPress={() => setScan(true)} />
+      <Row><Button title="Scan shop QR" onPress={() => setScan(true)} /><Button variant="ghost" title="Field records" onPress={() => router.push('/field/records')} /></Row>
       <Scanner visible={scan} types={['qr']} title="Scan the retailer's visit QR" onClose={() => setScan(false)} onCode={punch} />
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : !q.data.beats.length ? <Empty text={`No route planned for ${DAYS[q.data.weekday] ?? 'today'}`} /> :
         q.data.beats.map((b: any) => (
           <Card key={b.id}>
             <H2>{b.name}</H2>
             {b.retailers.map((r: any) => (
-              <Row key={r.id} style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+              <React.Fragment key={r.id}>
+              <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
                 <Body style={{ flex: 1 }}>{r.shop_name}</Body>
                 {r.visited_at ? <Chip label="Visited" tone="ok" /> : r.directions_url ? <Button small variant="ghost" title="Directions" onPress={() => Linking.openURL(r.directions_url)} /> : <Muted>No location</Muted>}
               </Row>
+              <Row>
+                <Button small variant="ghost" title="Collect" onPress={() => router.push({ pathname: '/retailer-ledger', params: { retailer_id: String(r.id), name: r.shop_name } })} />
+                <Button small variant="ghost" title="Record / photo" onPress={() => router.push({ pathname: '/field/log', params: { retailer_id: String(r.id), name: r.shop_name } })} />
+              </Row>
+              </React.Fragment>
             ))}
           </Card>
         ))}

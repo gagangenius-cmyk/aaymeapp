@@ -28,6 +28,7 @@ export default function More() {
       <MenuLink icon="cloud-upload" label="Import products (CSV)" onPress={go('/import')} />
       <MenuLink icon="alert-circle" label="Khata disputes" onPress={go('/disputes')} />
       <MenuLink icon="map" label="Field: shops, beats & visits" onPress={go('/field')} />
+      <MenuLink icon="images" label="Field records & photos" onPress={go('/field/records')} />
       <MenuLink icon="trending-up" label="Platform commission" onPress={go('/commission')} />
       <MenuLink icon="megaphone" label="Send offers to retailers" onPress={go('/(distributor)/offers')} />
       <MenuLink icon="chatbubbles" label="Chat with retailers" badge={unread} onPress={go('/chat')} />

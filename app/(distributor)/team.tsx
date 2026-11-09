@@ -14,12 +14,12 @@ export default function Team() {
   return (
     <Screen onRefresh={q.refetch} refreshing={q.isRefetching}>
       <H1>Team</H1>
-      <Button title="Add employee" onPress={() => router.push('/(distributor)/employee-new')} />
+      <Button title="Add sales / delivery person" onPress={() => router.push('/(distributor)/employee-new')} />
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : !q.data.employees.length ? <Empty text="No employees yet" /> :
         q.data.employees.map((e: any) => (
           <Card key={e.id}>
             <Row style={{ justifyContent: 'space-between' }}>
-              <Body style={{ fontWeight: '700' }}>{e.name}</Body>
+              <Body style={{ fontWeight: '700' }}>{e.name} · {e.kind === 'delivery' ? 'Delivery' : 'Sales'}</Body>
               <Chip label={!e.is_active ? 'Login off' : e.is_available ? 'Available' : 'On leave'} tone={!e.is_active ? 'danger' : e.is_available ? 'ok' : 'warn'} />
             </Row>
             <Muted>{e.phone} · {e.retailers} retailers · {e.open_orders} open · {e.delivered_today} delivered today</Muted>
