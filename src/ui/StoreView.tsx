@@ -146,7 +146,8 @@ export function StoreView({ id, query, onQuery }: { id: number; query?: string; 
                   <View style={{ position: 'absolute', top: 6, left: 6, backgroundColor: colors.green, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}><Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '800' }}>{`${p.discount_pct}% OFF`}</Text></View>
                 </View>
                 <Text numberOfLines={1} style={{ color: colors.text, fontSize: 13, fontWeight: '700' }}>{p.display_name}</Text>
-                <Row style={{ gap: 6, flexWrap: 'nowrap' }}><Text style={{ color: colors.text, fontSize: 15, fontWeight: '800' }}>{inr(p.price)}</Text><Muted style={{ textDecorationLine: 'line-through', fontSize: 11 }}>{inr(p.mrp)}</Muted></Row>
+                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={{ color: colors.text, fontSize: 15, fontWeight: '800' }}>{inr(p.price)}</Text>
+                <Muted numberOfLines={1} style={{ textDecorationLine: 'line-through', fontSize: 11 }}>{inr(p.mrp)}</Muted>
                 <Text style={{ color: colors.green, fontSize: 11.5, fontWeight: '700' }}>{`↓${p.discount_pct}% off`}</Text>
               </Pressable>
             ))}

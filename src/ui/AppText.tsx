@@ -11,11 +11,12 @@ const FAMILY: Record<string, string> = {
   '700': 'Inter_700Bold', bold: 'Inter_700Bold', '800': 'Inter_800ExtraBold', '900': 'Inter_800ExtraBold',
 };
 
+/** Text shrinks (and wraps) instead of pushing its row wider than the screen, so prices, names and amounts never run off a card. */
 export function AppText({ style, children, ...p }: TextProps) {
   useLang(); // re-render when the language changes
   // plain strings are translated from the dictionary; anything dynamic (numbers, names, mixed children) is left as is
   const content = typeof children === 'string' ? tr(children) : children;
   const flat = StyleSheet.flatten(style) ?? {};
   const { fontWeight, ...rest } = flat as any;
-  return <Text {...p} style={[{ fontFamily: FAMILY[String(fontWeight ?? '400')] ?? FAMILY['400'] }, rest]}>{content}</Text>;
+  return <Text {...p} style={[{ fontFamily: FAMILY[String(fontWeight ?? '400')] ?? FAMILY['400'], flexShrink: 1 }, rest]}>{content}</Text>;
 }

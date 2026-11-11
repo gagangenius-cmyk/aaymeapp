@@ -62,12 +62,12 @@ export function Card({ children, style, onPress }: { children: React.ReactNode; 
 export function Button({ title, onPress, loading, variant = 'primary', disabled, small }: { title: string; onPress: () => void; loading?: boolean; variant?: 'primary' | 'ghost' | 'danger'; disabled?: boolean; small?: boolean }) {
   const off = disabled || loading;
   const press = usePressScale(0.96);
-  const box: ViewStyle = { paddingVertical: small ? 9 : 15, paddingHorizontal: small ? 16 : 20, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, minHeight: small ? 36 : 50, flexDirection: 'row', gap: 8 };
+  const box: ViewStyle = { maxWidth: '100%', paddingVertical: small ? 9 : 15, paddingHorizontal: small ? 16 : 20, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, minHeight: small ? 36 : 50, flexDirection: 'row', gap: 8 };
   const color = variant === 'danger' ? colors.danger : '#fff';
   const label = (
     <>
       {loading && <Spinner color={color} />}
-      <AppText style={{ color: variant === 'ghost' ? colors.text : color, fontWeight: '700', fontSize: small ? 13 : 16 }}>{title}</AppText>
+      <AppText style={{ color: variant === 'ghost' ? colors.text : color, fontWeight: '700', fontSize: small ? 13 : 16, textAlign: 'center' }}>{title}</AppText>
     </>
   );
   const go = () => { tap(variant === 'danger' ? 'medium' : 'light'); onPress(); };
@@ -124,7 +124,7 @@ export function Chip({ label, active, onPress, tone }: { label: string; active?:
   const body = (
     <AppText style={{ color: tone ? colors[tone] : active ? colors.primary : colors.muted, fontSize: 12.5, fontWeight: active || tone ? '700' : '500' }}>{label}</AppText>
   );
-  const box: ViewStyle = { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 99, borderWidth: 1, borderColor: c, backgroundColor: tone ? colors[tone] + '1A' : active ? colors.primary + '1F' : 'transparent' };
+  const box: ViewStyle = { maxWidth: '100%', paddingHorizontal: 13, paddingVertical: 7, borderRadius: 99, borderWidth: 1, borderColor: c, backgroundColor: tone ? colors[tone] + '1A' : active ? colors.primary + '1F' : 'transparent' };
   if (!onPress) return <View style={box}>{body}</View>;
   return <APressable onPress={() => { tap('light'); onPress(); }} {...press.handlers} accessibilityRole="button" accessibilityState={{ selected: !!active }} style={[box, press.style]}>{body}</APressable>;
 }
