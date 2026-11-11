@@ -6,7 +6,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 import { fieldErrors, useGet, useSend } from '../lib/hooks';
-import { CategoryPicker, Cat } from './CategoryPicker';
 import { Body, Button, Card, Chip, Empty, ErrorBox, Field, H1, H2, inr, Loading, Muted, Row, Screen } from './kit';
 
 /** Retailers under this distributor. An employee only sees the ones they manage. */
@@ -78,16 +77,11 @@ export function RetailerForm() {
   const router = useRouter();
   const qc = useQueryClient();
   const team = useGet<any>('/distributor/employees', undefined, role === 'distributor');
-  // every category the distributor deals in (with sub-categories), or all active ones when they have not been limited to some
-  const tax = useGet<any>('/catalog/taxonomy');
   const [f, setF] = useState<Record<string, string>>({});
   const [managedBy, setManagedBy] = useState<number | null>(null);
-  const [categoryIds, setCategoryIds] = useState<number[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
-  const offered: Cat[] = (tax.data?.categories ?? []).filter((c: any) => c.status !== 'retired');
-  const restricted = !!tax.data?.restricted;   // the server then requires at least one category
 
   async function submit() {
     setErrors({}); setBusy(true);
@@ -96,7 +90,7 @@ export function RetailerForm() {
         body: {
           phone: f.phone, name: f.name, password: f.password, shop_name: f.shop_name, pincode: f.pincode,
           ...(f.email ? { email: f.email } : {}), ...(f.address ? { address: f.address } : {}), ...(f.gst_no ? { gst_no: f.gst_no } : {}),
-          ...(managedBy ? { managed_by_id: managedBy } : {}), ...(categoryIds.length ? { category_ids: categoryIds } : {}),
+          ...(managedBy ? { managed_by_id: managedBy } : {}),
         },
       });
       qc.invalidateQueries({ queryKey: ['/distributor/retailers'] });
@@ -123,12 +117,6 @@ export function RetailerForm() {
         </Row>
       </>)}
 
-      <H2>Categories this retailer can buy</H2>
-      {tax.isLoading ? <Muted>Loading categories…</Muted> : !offered.length ? <Muted>No categories are set up yet. This retailer will see everything you sell.</Muted> : (<>
-        <Muted>{restricted ? 'Choose at least one. Choosing a main category includes its sub-categories.' : 'Optional. Leave empty and the retailer sees everything you sell.'}</Muted>
-        <CategoryPicker categories={offered} selected={categoryIds} onChange={setCategoryIds} />
-        {!!errors.category_ids && <Muted>{errors.category_ids}</Muted>}
-      </>)}
 
       {!!errors._ && <Body style={{ color: '#D93A55' }}>{errors._}</Body>}
       <Button title="Create retailer" onPress={submit} loading={busy} />
