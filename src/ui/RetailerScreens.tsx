@@ -61,6 +61,7 @@ export function RetailerList({ createRoute }: { createRoute: string }) {
             <Body style={{ fontWeight: '700' }}>{selecting ? (picked.includes(r.id) ? '✓ ' : '○ ') : ''}{r.shop_name}</Body>
             <Muted>{r.name} · {r.phone} · {r.pincode}</Muted>
             <Muted>Managed by {r.managed_by_name ?? 'distributor'} · due {inr(Number(r.balance_due_paise) / 100)}{r.category_names ? ` · ${r.category_names}` : ''}</Muted>
+            {!selecting && <Row><Button small title="Collect cash / payment" onPress={() => router.push({ pathname: '/retailer-ledger', params: { retailer_id: String(r.id), name: r.shop_name } })} /></Row>}
           </Card>
         ))}
       {!!q.data?.pending?.length && <><H2>Waiting for retailer to accept</H2>{q.data.pending.map((p: any) => <Row key={p.id} style={{ justifyContent: 'space-between' }}><Muted>{p.phone}</Muted>{role === 'distributor' && <Button small variant="ghost" title="Withdraw" onPress={() => cancel.mutate({ id: p.id })} />}</Row>)}</>}

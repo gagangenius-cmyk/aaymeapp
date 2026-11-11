@@ -19,6 +19,7 @@ export const HI_MORE: Record<string, string> = {
   'Managed by (sales person)': 'किसके अंडर है (सेल्स पर्सन)',
   'No team members yet. Add them in the Team tab.': 'अभी कोई टीम सदस्य नहीं है। Team टैब में जोड़ें।',
   'Choose who looks after this retailer.': 'चुनें कि इस रिटेलर को कौन संभालेगा।',
+  'Collect cash / payment': 'नकद / पेमेंट लें',
   'Bulk upload': 'एक साथ कई प्रोडक्ट अपलोड करें',
   'Photos are uploaded when you tap Add product. The first one is the cover.': 'फोटो "Add product" दबाने पर अपलोड होंगी। पहली फोटो कवर होगी।',
   'Search for products, brands and more': 'प्रोडक्ट, ब्रांड और बहुत कुछ खोजें', 'GST': 'जीएसटी', 'Scan barcode': 'बारकोड स्कैन करें',
