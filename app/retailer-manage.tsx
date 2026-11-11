@@ -4,6 +4,7 @@ import { Alert } from '../src/ui/alert';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '../src/lib/auth';
 import { useGet, useSend } from '../src/lib/hooks';
+import { CategoryPicker } from '../src/ui/CategoryPicker';
 import { Body, Button, Card, Chip, ErrorBox, H2, Loading, Muted, Row, Screen } from '../src/ui/kit';
 
 /** One retailer: open their khata, choose which categories they can buy, reset a wrongly pinned shop location. */
@@ -28,9 +29,9 @@ export default function RetailerManage() {
       {isOwner && (cats.isLoading ? <Loading /> : cats.error ? <ErrorBox error={cats.error} retry={cats.refetch} /> : (
         <Card>
           <H2>Categories this retailer can buy</H2>
-          <Muted>{cats.data.offered.length ? 'They see prices for, and can order from, only the chosen categories.' : 'You have no categories set up, so this retailer sees everything.'}</Muted>
-          <Row>{cats.data.offered.map((c: any) => <Chip key={c.id} label={c.name} active={sel.includes(c.id)} onPress={() => setSel(sel.includes(c.id) ? sel.filter((x) => x !== c.id) : [...sel, c.id])} />)}</Row>
-          {cats.data.offered.length > 0 && <Button small title="Save categories" loading={save.isPending} disabled={!sel.length} onPress={() => save.mutate({ category_ids: sel })} />}
+          <Muted>{cats.data.restricted ? 'They see prices for, and can order from, only the chosen categories (a main category includes its sub-categories).' : 'Optional. With none chosen, this retailer sees everything you sell.'}</Muted>
+          <CategoryPicker categories={cats.data.offered} selected={sel} onChange={setSel} />
+          {cats.data.offered.length > 0 && <Button small title="Save categories" loading={save.isPending} disabled={cats.data.restricted && !sel.length} onPress={() => save.mutate({ category_ids: sel })} />}
         </Card>
       ))}
       {!isOwner && <Body>Ask your distributor to change this retailer's categories.</Body>}
