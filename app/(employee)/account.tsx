@@ -15,6 +15,7 @@ export default function EmployeeAccount() {
         <Toggle label="I am available for deliveries" help="Switch off when you are on leave: new orders will not be assigned to you." value={available}
           onChange={(v) => { setAvailable(v); setAvail.mutate({ is_available: v }, { onError: () => setAvailable(!v) }); }} />
       </Card>
+      <MenuLink icon="person-add" label="Add a retailer" onPress={() => router.push('/(employee)/retailer-new')} />
       <MenuLink icon="map" label="Shops near me" onPress={() => router.push('/field')} />
       <MenuLink icon="images" label="Field records & photos" onPress={() => router.push('/field/records')} />
       <MenuLink icon="wallet" label="Record a cash collection" onPress={() => router.push('/(employee)/retailers')} />
