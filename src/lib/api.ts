@@ -2,7 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import { API, API_URL } from './config';
 
-export type Role = 'admin' | 'company_employee' | 'distributor' | 'employee' | 'retailer';
+export type Role = 'admin' | 'company_employee' | 'distributor' | 'employee' | 'retailer' | 'customer';
 export interface Session { id: number; role: Role; access_token: string; refresh_token: string }
 
 export class ApiError extends Error {

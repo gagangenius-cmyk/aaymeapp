@@ -9,6 +9,7 @@ export default function AdminMore() {
   const router = useRouter();
   const ob = useGet<any>('/admin/onboarding', { status: 'payment_submitted' });
   const sp = useGet<any>('/admin/subscription-payments', { status: 'pending' });
+  const rss = useGet<any>('/admin/subscription-sales', { status: 'payment_submitted' });
   const go = (p: string) => () => router.push(p as any);
   return (
     <AccountScreen>
@@ -16,6 +17,10 @@ export default function AdminMore() {
       <MenuLink icon="person-add" label="Onboarding payments" badge={ob.data?.requests?.length} onPress={go('/console/onboarding')} />
       <MenuLink icon="card" label="Subscription payments" badge={sp.data?.payments?.length} onPress={go('/console/sub-payments')} />
       <MenuLink icon="pricetags" label="Subscription plans" onPress={go('/console/plans')} />
+      <MenuLink icon="ribbon" label="Retailer subscription plans" onPress={go('/console/retailer-plans')} />
+      <MenuLink icon="checkmark-circle" label="Retailer subscription sales" badge={rss.data?.sales?.length} onPress={go('/console/subscription-sales')} />
+      <MenuLink icon="stats-chart" label="Distributor sales & commission" onPress={go('/console/sales-report')} />
+      <MenuLink icon="calendar" label="Retailer subscriptions (start & expiry)" onPress={go('/console/retailer-subscriptions')} />
       <MenuLink icon="cash" label="Commission & settlements" onPress={go('/console/commission')} />
       <MenuLink icon="git-compare" label="Reconciliation" onPress={go('/console/reconciliation')} />
       <MenuLink icon="settings" label="Company UPI & payout rules" onPress={go('/console/settings')} />

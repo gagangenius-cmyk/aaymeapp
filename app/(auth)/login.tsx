@@ -78,6 +78,8 @@ export default function Login() {
           <Animated.View entering={FadeInDown.delay(380).duration(450)} style={{ alignItems: 'center', marginTop: 8 }}>
             <Muted>New retailer or distributor?</Muted>
             <Link href="/(auth)/register" style={{ color: colors.cyan, fontWeight: '700', marginTop: 4 }}>Create an account</Link>
+            <Muted style={{ marginTop: 12 }}>Shopping from a store near you?</Muted>
+            <Link href="/(auth)/customer-register" style={{ color: colors.cyan, fontWeight: '700', marginTop: 4 }}>Sign up as a customer</Link>
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>

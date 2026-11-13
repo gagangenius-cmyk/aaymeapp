@@ -43,4 +43,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 /** Where each role lands. */
-export const homeFor = (r: Role) => ({ admin: '/(admin)', company_employee: '/(staff)', distributor: '/(distributor)', employee: '/(employee)', retailer: '/(retailer)' }[r]);
+export const homeFor = (r: Role) => ({ admin: '/(admin)', company_employee: '/(staff)', distributor: '/(distributor)', employee: '/(employee)', retailer: '/(retailer)', customer: '/(customer)' }[r]);

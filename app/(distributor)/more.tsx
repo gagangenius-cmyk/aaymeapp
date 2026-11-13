@@ -25,6 +25,7 @@ export default function More() {
       <MenuLink icon="pricetags" label="Price lists (special pricing)" onPress={go('/pricing')} />
       <MenuLink icon="cube" label="Inventory & warehouses" onPress={go('/inventory')} />
       <MenuLink icon="hourglass" label="Expiring stock" onPress={go('/expiring')} />
+      <MenuLink icon="ribbon" label="Sell AAYME subscriptions (earn commission)" onPress={go('/sales')} />
       <MenuLink icon="person-add" label="Add a retailer" onPress={go('/(distributor)/retailer-new')} />
       <MenuLink icon="cloud-upload" label="Import products (CSV)" onPress={go('/import')} />
       <MenuLink icon="alert-circle" label="Khata disputes" onPress={go('/disputes')} />

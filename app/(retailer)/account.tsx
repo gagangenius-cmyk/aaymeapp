@@ -11,6 +11,9 @@ export default function RetailerAccount() {
   const go = (p: string) => () => router.push(p as any);
   return (
     <AccountScreen>
+      <MenuLink icon="storefront" label="My online store" onPress={go('/store')} />
+      <MenuLink icon="barcode" label="Counter billing" onPress={go('/store/pos')} />
+      <MenuLink icon="ribbon" label="My AAYME plan" onPress={go('/my-plan')} />
       <MenuLink icon="chatbubbles" label="Chat with distributors" badge={unread} onPress={go('/chat')} />
       <MenuLink icon="location" label="Shop location & visit QR" onPress={go('/field/shop')} />
       <MenuLink icon="images" label="Visit records & photos" onPress={go('/field/records')} />

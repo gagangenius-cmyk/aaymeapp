@@ -26,7 +26,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const GROUP = { admin: '(admin)', company_employee: '(staff)', distributor: '(distributor)', employee: '(employee)', retailer: '(retailer)' } as const;
+const GROUP = { admin: '(admin)', company_employee: '(staff)', distributor: '(distributor)', employee: '(employee)', retailer: '(retailer)', customer: '(customer)' } as const;
 const GROUPS: string[] = Object.values(GROUP);
 
 /** Sends signed-out people to login, and signed-in people to the area for their role. */
@@ -63,7 +63,7 @@ const TITLES: Record<string, string> = {
   'inventory/index': 'Inventory', 'inventory/move': 'Stock move', 'inventory/movements': 'Stock movements', 'retailer-ledger': 'Khata', disputes: 'Disputes',
   import: 'Import products', expiring: 'Expiring stock', commission: 'Platform commission', einvoice: 'GST e-invoice',
   'field/index': 'Field', 'field/shop': 'Shop location', 'field/today': "Today's route", 'field/log': 'Record at shop', 'field/records': 'Field records',
-  'console/sub-payments': 'Subscription payments', 'console/onboarding': 'Onboarding payments', 'console/plans': 'Plans', 'console/settings': 'Company settings',
+  'console/sub-payments': 'Subscription payments', 'sales/index': 'Subscription sales', 'sales/leads': 'Retailer leads', 'sales/plans': 'Subscription plans', 'sales/sell': 'Sell subscription', 'sales/earnings': 'My earnings', 'sales/history': 'Sales history', 'sales/performance': 'Performance', 'console/retailer-plans': 'Retailer plans', 'console/subscription-sales': 'Subscription sales', 'console/sales-report': 'Sales & commission', 'console/sales-setup': 'Rates & target', 'console/retailer-subscriptions': 'Retailer subscriptions', 'my-plan': 'My AAYME plan', 'store/index': 'My online store', 'store/settings': 'Store settings', 'store/qr': 'Store QR code', 'store/customers': 'Customers', 'store/products': 'Products', 'store/product-form': 'Product', 'store/import': 'From my distributor', 'store/orders': 'Orders', 'store/pos': 'Counter billing', 'store/bill': 'Bill', 'store/daybook': 'Day book', 'store/reports': 'Reports', 'store/offers': 'Offers', 'customer/store': 'Store', 'customer/cart': 'Basket', 'customer/order': 'Order', 'customer/scan': 'Open a store', 'customer/profile': 'My address & location', 'console/onboarding': 'Onboarding payments', 'console/plans': 'Plans', 'console/settings': 'Company settings',
   'console/audit': 'Audit trail', 'console/visits': 'Visit history', 'console/roles': 'Roles', 'console/distributors': 'Distributors', 'console/taxonomy': 'Categories & brands',
   'console/commission': 'Commission', 'console/reconciliation': 'Reconciliation', 'business-profile': 'Business profile', 'retailer-manage': 'Retailer',
   'reports-export': 'Export reports', 'business-summary': 'Business summary', 'desk/stats': 'Support performance', 'desk/settings': 'SLA & categories', recon: 'Reconciliation', 'console/products': 'Product approvals', 'console/user-edit': 'Edit details', 'console/distributor-admin': 'Distributor settings', 'console/commission-rules': 'Commission rules', 'console/settlement': 'Settlement', 'console/commission-entries': 'Commission entries', 'product-audience': 'Product visibility',
