@@ -8,11 +8,12 @@ import { parseCsv } from '../src/lib/csv';
 import { exclusive } from '../src/lib/pricing';
 import { Body, Button, Card, Chip, H2, Muted, Row, Screen, Toggle } from '../src/ui/kit';
 
-const COLUMNS = ['sku', 'name', 'category', 'brand', 'description', 'mrp', 'price', 'cost', 'stock', 'unit', 'hsn', 'gst', 'barcode', 'weight_g', 'min_order_qty', 'low_stock_threshold', 'status'];
-const CHUNK = 500, MAX_ROWS = 5000;
+const COLUMNS = ['sku', 'name', 'category', 'brand', 'description', 'mrp', 'price', 'cost', 'stock', 'unit', 'hsn', 'gst', 'barcode', 'weight_g', 'min_order_qty', 'low_stock_threshold', 'status', 'image_url', 'other_image_urls'];
+const CHUNK = 500, CHUNK_WITH_PHOTOS = 20, MAX_ROWS = 5000;   // photos are downloaded while importing, so those files go in smaller parts
 /** Other names for the same column (a spreadsheet made with longer headings works as it is). */
 const ALIAS: Record<string, string> = {
   product_sku: 'sku', product_name: 'name', selling_price: 'price', retail_price: 'price', rate: 'price', purchase_price: 'cost', stock_quantity: 'stock', quantity: 'stock', qty: 'stock',
+  main_image_url: 'image_url', photo_link: 'image_url', photo_url: 'image_url', image: 'image_url', image_link: 'image_url', photo: 'image_url', other_images: 'other_image_urls', other_photo_links: 'other_image_urls', other_image_url: 'other_image_urls',
   hsn_code: 'hsn', gst_rate: 'gst', 'gst_%': 'gst', weight: 'weight_g', product_status: 'status', moq: 'min_order_qty', minimum_order_quantity: 'min_order_qty',
 };
 /** Rename headings, drop "%" and thousands commas from numbers, and turn the status column into the server's "active" flag. */
@@ -52,7 +53,7 @@ export default function Import() {
 
   async function template() {
     const uri = `${FileSystem.cacheDirectory}aayme-products-template.csv`;
-    await FileSystem.writeAsStringAsync(uri, `${COLUMNS.join(',')}\nRICE5,Basmati Rice 5kg,Grocery,India Gate,Long grain rice,450.00,420.00,380.00,100,pack,1006,5,,5000,1,10,Active\nAY002,USB Cable,Accessories,,,299.00,149.00,,250,pcs,8544,18,,,1,10,Active\n`);
+    await FileSystem.writeAsStringAsync(uri, `${COLUMNS.join(',')}\nRICE5,Basmati Rice 5kg,Grocery,India Gate,Long grain rice,450.00,420.00,380.00,100,pack,1006,5,,5000,1,10,Active,https://example.com/rice-front.jpg,https://example.com/rice-back.jpg|https://example.com/rice-side.jpg\nAY002,USB Cable,Accessories,,,299.00,149.00,,250,pcs,8544,18,,,1,10,Active,https://example.com/usb-cable.jpg,\n`);
     if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(uri, { mimeType: 'text/csv', dialogTitle: 'Product import template' });
   }
 
@@ -60,14 +61,15 @@ export default function Import() {
     setBusy(true); setResult(null);
     try {
       const all = rows.map((r) => normalise(r, includesGst));
+      const size = all.some((r) => r.image_url || r.other_image_urls) ? CHUNK_WITH_PHOTOS : CHUNK;
       const total = { created: 0, updated: 0, errors: [] as { row: number; message: string }[] };
-      for (let i = 0; i < all.length; i += CHUNK) {
-        setProgress(`${Math.min(i + CHUNK, all.length)} / ${all.length}`);
+      for (let i = 0; i < all.length; i += size) {
+        setProgress(`${Math.min(i + size, all.length)} / ${all.length}`);
         try {
-          const r = await api<any>('/catalog/import/rows', { body: { rows: all.slice(i, i + CHUNK), upsert, all_or_nothing: allOrNothing } });
+          const r = await api<any>('/catalog/import/rows', { body: { rows: all.slice(i, i + size), upsert, all_or_nothing: allOrNothing } });
           total.created += r.created; total.updated += r.updated; total.errors.push(...(r.errors ?? []).map((e: any) => ({ ...e, row: e.row + i })));
         } catch (e: any) {
-          total.errors.push({ row: i + 1, message: `Rows ${i + 1} to ${Math.min(i + CHUNK, all.length)} were not saved: ${e.message}` });
+          total.errors.push({ row: i + 1, message: `Rows ${i + 1} to ${Math.min(i + size, all.length)} were not saved: ${e.message}` });
           if (allOrNothing) break;
         }
       }
@@ -87,7 +89,7 @@ export default function Import() {
     <Screen>
       <Card>
         <H2>1. Get the template</H2>
-        <Muted>Columns: {COLUMNS.join(', ')}. Only name and price are required. Headings like Product SKU, Product Name, Selling Price, Stock Quantity, HSN Code and GST Rate also work.</Muted>
+        <Muted>Columns: {COLUMNS.join(', ')}. Only name and price are required. Photo links go in image_url (the main photo) and other_image_urls (more photos, separated by |): they must be https links to JPEG, PNG or WebP pictures. Headings like Product SKU, Product Name, Selling Price, Stock Quantity, HSN Code and GST Rate also work.</Muted>
         <Button small variant="ghost" title="Download template" onPress={template} />
       </Card>
       <Card>

@@ -13,6 +13,7 @@ export function RetailerList({ createRoute }: { createRoute: string }) {
   const { role } = useAuth();
   const router = useRouter();
   const q = useGet<any>('/distributor/retailers', { mine: role === 'employee' ? '1' : '0' });
+  const [find, setFind] = useState('');   // search the list by shop name, owner name or phone number
   const [phone, setPhone] = useState('');
   const invite = useSend<{ phone: string }>('/distributor/retailers', { invalidate: ['/distributor/retailers'], onDone: () => { setPhone(''); Alert.alert('Request sent', 'If a retailer with this number exists, they have been asked to accept.'); } });
   const [selecting, setSelecting] = useState(false);
@@ -21,6 +22,10 @@ export function RetailerList({ createRoute }: { createRoute: string }) {
   const team = useGet<any>('/distributor/employees', undefined, role === 'distributor');
   const members = (team.data?.employees ?? []).filter((e: any) => e.is_active !== 0 && e.is_active !== false);
   const toggle = (id: number) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const shown = (list: any[]) => {
+    const t = find.trim().toLowerCase(); const digits = t.replace(/\D/g, '');
+    return !t ? list : list.filter((r) => `${r.shop_name ?? ''} ${r.name ?? ''}`.toLowerCase().includes(t) || (digits.length > 0 && String(r.phone ?? '').includes(digits)));
+  };
   const bulk = useSend<{ retailer_ids?: number[]; from_employee_id?: number; employee_id: number | null }>('/distributor/retailers/bulk-manager', { method: 'PUT', invalidate: ['/distributor/retailers', '/distributor/employees'], onDone: (r: any) => { setPicked([]); setSelecting(false); setFromEmp(null); Alert.alert('Moved', `${r.moved} retailer${r.moved === 1 ? '' : 's'} moved.`); } });
   const cancel = useSend<{ id: number }>((b) => `/distributor/retailers/${b.id}`, { method: 'DELETE', invalidate: ['/distributor/retailers'] });
   return (
@@ -36,7 +41,7 @@ export function RetailerList({ createRoute }: { createRoute: string }) {
       {role === 'distributor' && (
         <Row>
           <Button small variant="ghost" title={selecting ? 'Done' : 'Select many'} onPress={() => { setSelecting(!selecting); setPicked([]); setFromEmp(null); }} />
-          {selecting && <Button small variant="ghost" title="Select all" onPress={() => setPicked((q.data?.retailers ?? []).map((r: any) => r.id))} />}
+          {selecting && <Button small variant="ghost" title="Select all" onPress={() => setPicked(shown(q.data?.retailers ?? []).map((r: any) => r.id))} />}
         </Row>
       )}
       {selecting && (
@@ -54,8 +59,10 @@ export function RetailerList({ createRoute }: { createRoute: string }) {
           </Row>}
         </Card>
       )}
+      <Field label="Search retailer" value={find} onChangeText={setFind} placeholder="Shop name, owner name or phone number" />
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : !q.data.retailers.length ? <Empty text="No retailers yet" /> :
-        q.data.retailers.map((r: any) => (
+        !shown(q.data.retailers).length ? <Empty text="No retailer matches your search" /> :
+        shown(q.data.retailers).map((r: any) => (
           <Card key={r.id} style={picked.includes(r.id) ? { borderColor: '#2874F0' } : undefined} onPress={() => (selecting ? toggle(r.id) : router.push({ pathname: '/retailer-manage', params: { retailer_id: String(r.id), name: r.shop_name } }))}>
             <Body style={{ fontWeight: '700' }}>{selecting ? (picked.includes(r.id) ? '✓ ' : '○ ') : ''}{r.shop_name}</Body>
             <Muted>{r.name} · {r.phone} · {r.pincode}</Muted>

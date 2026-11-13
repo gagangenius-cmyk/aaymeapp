@@ -173,13 +173,17 @@ export default function ProductForm() {
 
       {!!cats.length && (<>
         <H2>Category</H2>
-        {levels.map((lvl, n) => <Row key={n}>{lvl.map((c: any) => <Chip key={c.id} label={c.name} active={chain.includes(c.id)} onPress={() => setCatId(c.id)} />)}</Row>)}
-        {catId !== null && (
+        <Row>{levels[0].map((c: any) => <Chip key={c.id} label={c.name} active={chain.includes(c.id)} onPress={() => setCatId(c.id)} />)}</Row>
+        {catId !== null && (<>
+          <H2>Sub-category</H2>
+          <Muted>{levels.length > 1 ? `Choose the sub-category of ${byCatId.get(chain[0])?.name ?? 'this category'} so the product is saved in the right place.` : `No sub-categories under ${byCatId.get(chain[0])?.name ?? 'this category'} yet. Add one below, or save in this category.`}</Muted>
+          {levels.slice(1).map((lvl, n) => <Row key={n}>{lvl.map((c: any) => <Chip key={c.id} label={c.name} active={chain.includes(c.id)} onPress={() => setCatId(c.id)} />)}</Row>)}
+          {chain.length > 1 && <Muted>Saved in: {chain.map((id) => byCatId.get(id)?.name).filter(Boolean).join(' › ')}</Muted>}
           <Row>
             <Field label={`New sub-category under ${byCatId.get(catId)?.name ?? 'this category'}`} value={newSub} onChangeText={setNewSub} autoCapitalize="words" style={{ minWidth: 200 }} />
             <Button small variant="ghost" title="Add" disabled={!newSub.trim()} loading={addSub.isPending} onPress={() => addSub.mutate({ name: newSub.trim(), parent_id: catId })} />
           </Row>
-        )}
+        </>)}
       </>)}
       <Row>
         <Field label="Brand name" value={scanBrand} onChangeText={(v) => { setScanBrand(v); if (v) setBrandId(null); }} autoCapitalize="words" style={{ minWidth: 150 }} />
