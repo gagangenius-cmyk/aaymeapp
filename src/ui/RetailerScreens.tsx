@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 import { fieldErrors, useGet, useSend } from '../lib/hooks';
+import { Select } from './Select';
 import { Body, Button, Card, Chip, Empty, ErrorBox, Field, H1, H2, inr, Loading, Muted, Row, Screen } from './kit';
 
 /** Retailers under this distributor. An employee only sees the ones they manage. */
@@ -116,13 +117,10 @@ export function RetailerForm() {
       <Field label="Address (optional)" value={f.address} onChangeText={set('address')} error={errors.address} />
       <Field label="GSTIN (optional)" value={f.gst_no} onChangeText={set('gst_no')} autoCapitalize="characters" maxLength={15} error={errors.gst_no} />
 
-      {role === 'distributor' && !!team.data?.employees?.length && (<>
-        <H2>Place under</H2>
-        <Row>
-          <Chip label="Me (owner)" active={managedBy === null} onPress={() => setManagedBy(null)} />
-          {team.data.employees.filter((e: any) => e.is_active).map((e: any) => <Chip key={e.id} label={e.name} active={managedBy === e.id} onPress={() => setManagedBy(e.id)} />)}
-        </Row>
-      </>)}
+      {role === 'distributor' && !!team.data?.employees?.length && (
+        <Select label="Place under" value={managedBy ?? 0} placeholder="Me (owner)" options={[{ value: 0, label: 'Me (owner)' }, ...team.data.employees.filter((e: any) => e.is_active).map((e: any) => ({ value: e.id, label: e.name, hint: e.kind === 'delivery' ? 'Delivery person' : 'Sales person' }))]}
+          onChange={(v) => setManagedBy(v ? Number(v) : null)} />
+      )}
 
 
       {!!errors._ && <Body style={{ color: '#D93A55' }}>{errors._}</Body>}

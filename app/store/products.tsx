@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { mediaUrl } from '../../src/lib/api';
 import { useGet } from '../../src/lib/hooks';
+import { ProductImage } from '../../src/ui/ProductImage';
 import { Scanner, PRODUCT_CODES } from '../../src/ui/Scanner';
 import { Body, Button, Card, Chip, Empty, ErrorBox, Field, H2, inr, Loading, Muted, Row, Screen } from '../../src/ui/kit';
 
@@ -27,9 +30,14 @@ export default function StoreProducts() {
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : !q.data.products.length ? <Empty text="No products yet. Add your own, or copy some from your distributor." /> :
         q.data.products.map((p: any) => (
           <Card key={p.id} onPress={() => router.push({ pathname: '/store/product-form', params: { id: String(p.id) } })}>
-            <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}><Body style={{ fontWeight: '700', flex: 1 }}>{p.name}</Body><Body style={{ fontWeight: '800' }}>{inr(p.price)}</Body></Row>
-            <Muted>{p.category ?? 'No category'}{p.barcode ? ` · ${p.barcode}` : ''}{p.imported ? ' · from distributor' : ''}</Muted>
-            <Muted style={{ color: p.stock_qty <= 0 ? '#D93A55' : undefined }}>Stock {p.stock_qty}{p.is_active ? '' : ' · hidden'}{p.cost ? ` · cost ${inr(p.cost)}` : ''}</Muted>
+            <Row style={{ flexWrap: 'nowrap', alignItems: 'flex-start', gap: 12 }}>
+              <ProductImage uri={mediaUrl(p.image_url)} size={64} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}><Body style={{ fontWeight: '700', flex: 1 }}>{p.name}</Body><Body style={{ fontWeight: '800' }}>{inr(p.price)}</Body></Row>
+                <Muted>{p.category ?? 'No category'}{p.barcode ? ` · ${p.barcode}` : ''}{p.imported ? ' · from distributor' : ''}</Muted>
+                <Muted style={{ color: p.stock_qty <= 0 ? '#D93A55' : undefined }}>Stock {p.stock_qty}{p.is_active ? '' : ' · hidden'}{p.cost ? ` · cost ${inr(p.cost)}` : ''}</Muted>
+              </View>
+            </Row>
           </Card>
         ))}
       <Scanner visible={scan} types={PRODUCT_CODES} title="Scan a product barcode" onClose={() => setScan(false)} onCode={(c) => { setScan(false); setText(c); }} />

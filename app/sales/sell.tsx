@@ -6,6 +6,7 @@ import { api } from '../../src/lib/api';
 import { goBack } from '../../src/lib/nav';
 import { fieldErrors, useGet } from '../../src/lib/hooks';
 import { Alert } from '../../src/ui/alert';
+import { Select } from '../../src/ui/Select';
 import { Body, Button, Card, Chip, ErrorBox, Field, H2, inr, Loading, Muted, Row, Screen } from '../../src/ui/kit';
 
 const METHODS: [string, string][] = [['upi', 'UPI'], ['bank', 'Bank transfer'], ['cheque', 'Cheque'], ['cash', 'Cash']];
@@ -79,8 +80,7 @@ export default function Sell() {
         <Chip label="Existing retailer" active={!!existing} onPress={() => setExisting(chosen?.id ?? (mine.data?.retailers?.[0]?.id ?? null))} />
       </Row>
       {existing ? (<>
-        <Field label="Search retailer" value={find} onChangeText={setFind} placeholder="Shop name, owner name or phone number" />
-        {shops.map((r: any) => <Chip key={r.id} label={`${r.shop_name} · ${r.phone}`} active={existing === r.id} onPress={() => setExisting(r.id)} />)}
+        <Select label="Retailer" value={existing} placeholder="Choose a retailer" options={(mine.data?.retailers ?? []).map((r: any) => ({ value: r.id, label: r.shop_name, hint: `${r.name} · ${r.phone}` }))} onChange={(v) => setExisting(v ? Number(v) : null)} />
       </>) : (<>
         <Field label="Shop name" value={f.shop_name} onChangeText={set('shop_name')} autoCapitalize="words" error={errors['retailer.shop_name']} />
         <Field label="Retailer name" value={f.name} onChangeText={set('name')} autoCapitalize="words" error={errors['retailer.name']} />

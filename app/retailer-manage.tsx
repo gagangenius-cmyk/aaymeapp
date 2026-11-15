@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '../src/lib/auth';
 import { useGet, useSend } from '../src/lib/hooks';
 import { CategoryPicker } from '../src/ui/CategoryPicker';
+import { Select } from '../src/ui/Select';
 import { Body, Button, Card, Chip, ErrorBox, H2, Loading, Muted, Row, Screen } from '../src/ui/kit';
 
 /** One retailer: open their khata, choose which categories they can buy, reset a wrongly pinned shop location. */
@@ -35,11 +36,9 @@ export default function RetailerManage() {
       {isOwner && (
         <Card>
           <H2>Managed by (sales person)</H2>
-          <Muted>{current ? `Now: ${current.managed_by_name ?? 'you (owner)'}` : 'Choose who looks after this retailer.'}</Muted>
-          <Row>
-            <Chip label="Me (owner)" active={!!current && current.managed_by_id == null} onPress={() => place.mutate({ retailer_ids: [rid], employee_id: null })} />
-            {members.map((e: any) => <Chip key={e.id} label={`${e.name} (${e.kind === 'delivery' ? 'delivery' : 'sales'})`} active={current?.managed_by_id === e.id} onPress={() => place.mutate({ retailer_ids: [rid], employee_id: e.id })} />)}
-          </Row>
+          <Select label="Sales person" value={current ? (current.managed_by_id ?? 0) : null} placeholder="Choose who looks after this retailer"
+            options={[{ value: 0, label: 'Me (owner)' }, ...members.map((e: any) => ({ value: e.id, label: e.name, hint: e.kind === 'delivery' ? 'Delivery person' : 'Sales person' }))]}
+            onChange={(v) => place.mutate({ retailer_ids: [rid], employee_id: v ? Number(v) : null })} />
           {!members.length && !team.isLoading && <Muted>No team members yet. Add them in the Team tab.</Muted>}
         </Card>
       )}

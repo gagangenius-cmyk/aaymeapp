@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Linking, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { mediaUrl } from '../../src/lib/api';
 import { useGet } from '../../src/lib/hooks';
+import { ProductImage } from '../../src/ui/ProductImage';
 import { cartCount, cartQty, cartTotal, setCartQty, useStoreCart } from '../../src/lib/storeCart';
 import { colors } from '../../src/lib/theme';
 import { Alert } from '../../src/ui/alert';
@@ -60,6 +62,7 @@ export default function CustomerStore() {
             return (
               <Card key={p.id}>
                 <Row style={{ justifyContent: 'space-between', flexWrap: 'nowrap', alignItems: 'flex-start' }}>
+                  <ProductImage uri={mediaUrl(p.image_url)} size={72} />
                   <View style={{ flex: 1, gap: 2 }}>
                     {!!p.brand && <Muted>{p.brand}</Muted>}
                     <Body style={{ fontWeight: '700' }}>{p.name}</Body>

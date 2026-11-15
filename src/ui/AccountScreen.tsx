@@ -1,4 +1,6 @@
 import React from 'react';
+import * as Application from 'expo-application';
+import * as Updates from 'expo-updates';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../lib/auth';
 import { useGet } from '../lib/hooks';
@@ -29,6 +31,8 @@ export function AccountScreen({ children }: { children?: React.ReactNode }) {
       <MenuLink icon="lock-closed" label="Security & privacy" onPress={() => router.push('/security')} />
       <Button title="Sign out" variant="ghost" onPress={signOut} />
       <Logo size={56} tagline={false} />
+      {/* which build and which content this phone is running: the first thing to check when an update does not show */}
+      <Muted style={{ textAlign: 'center' }}>{`Version ${Application.nativeApplicationVersion ?? '?'} (build ${Application.nativeBuildVersion ?? '?'}) · ${Updates.isEmbeddedLaunch ? 'built-in content' : `update ${String(Updates.updateId ?? '').slice(0, 8)}`}`}</Muted>
     </Screen>
   );
 }

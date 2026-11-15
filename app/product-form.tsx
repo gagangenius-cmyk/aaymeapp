@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { api, uploadRaw } from '../src/lib/api';
 import { fieldErrors, useGet, useSend } from '../src/lib/hooks';
 import { Scanner, PRODUCT_CODES } from '../src/ui/Scanner';
+import { Select } from '../src/ui/Select';
 import { ProductHistory } from '../src/ui/ProductHistory';
 import { NewProductPhotos, PickedPhoto, ProductAudience, ProductBatches, ProductPhotos } from '../src/ui/ProductExtras';
 import { exclusive, inclusive } from '../src/lib/pricing';
@@ -151,7 +152,7 @@ export default function ProductForm() {
       </Row>
       <Row><Chip label="Rate includes GST" active={incl} onPress={() => switchMode(true)} /><Chip label="Price before GST" active={!incl} onPress={() => switchMode(false)} /></Row>
       {!!Number(f.price) && <Muted>{incl ? `Shops see ₹${inclusive(exclusive(f.price, Math.round(gst * 100)), Math.round(gst * 100)).toFixed(2)}: ₹${exclusive(f.price, Math.round(gst * 100)).toFixed(2)} + ${gst}% GST. The invoice shows the split.` : `Shops will see ₹${inclusive(f.price, Math.round(gst * 100)).toFixed(2)} (₹${Number(f.price).toFixed(2)} + ${gst}% GST).`}</Muted>}
-      <H2>Unit</H2><Row>{UNITS.map((u) => <Chip key={u} label={u} active={f.unit === u} onPress={() => set('unit')(u)} />)}</Row>
+      <Select label="Unit" value={f.unit} options={UNITS.map((u) => ({ value: u, label: u }))} onChange={(v) => set('unit')(String(v))} />
       <H2>GST %</H2><Row>{GST.map((g) => <Chip key={g} label={`${g}%`} active={gst === g} onPress={() => setGst(g)} />)}</Row>
       {!!errors.gst_rate_bps && <Muted>{errors.gst_rate_bps}</Muted>}
       <Row>
@@ -172,12 +173,14 @@ export default function ProductForm() {
       <Field label="Description" value={f.description} onChangeText={set('description')} multiline style={{ minHeight: 60 }} autoCapitalize="sentences" />
 
       {!!cats.length && (<>
-        <H2>Category</H2>
-        <Row>{levels[0].map((c: any) => <Chip key={c.id} label={c.name} active={chain.includes(c.id)} onPress={() => setCatId(c.id)} />)}</Row>
+        <Select label="Category" value={chain[0] ?? null} options={levels[0].map((c: any) => ({ value: c.id, label: c.name }))} placeholder="Choose a category" clearLabel="Clear category"
+          onChange={(v) => { setCatId(v as number | null); if (v) setScanCategory(''); }} />
+        {catId !== null && levels.slice(1).map((lvl, n) => (
+          <Select key={n} label={n === 0 ? 'Sub-category' : 'Next level'} value={chain[n + 1] ?? null} options={lvl.map((c: any) => ({ value: c.id, label: c.name }))}
+            placeholder="Choose a sub-category" clearLabel="Use the category above" onChange={(v) => setCatId((v as number | null) ?? chain[n])} />
+        ))}
         {catId !== null && (<>
-          <H2>Sub-category</H2>
-          <Muted>{levels.length > 1 ? `Choose the sub-category of ${byCatId.get(chain[0])?.name ?? 'this category'} so the product is saved in the right place.` : `No sub-categories under ${byCatId.get(chain[0])?.name ?? 'this category'} yet. Add one below, or save in this category.`}</Muted>
-          {levels.slice(1).map((lvl, n) => <Row key={n}>{lvl.map((c: any) => <Chip key={c.id} label={c.name} active={chain.includes(c.id)} onPress={() => setCatId(c.id)} />)}</Row>)}
+          {levels.length === 1 && <Muted>{`No sub-categories under ${byCatId.get(chain[0])?.name ?? 'this category'} yet. Add one below, or save in this category.`}</Muted>}
           {chain.length > 1 && <Muted>Saved in: {chain.map((id) => byCatId.get(id)?.name).filter(Boolean).join(' › ')}</Muted>}
           <Row>
             <Field label={`New sub-category under ${byCatId.get(catId)?.name ?? 'this category'}`} value={newSub} onChangeText={setNewSub} autoCapitalize="words" style={{ minWidth: 200 }} />
@@ -185,11 +188,12 @@ export default function ProductForm() {
           </Row>
         </>)}
       </>)}
+      <Select label="Brand" value={brandId} options={(tax.data?.brands ?? []).map((b: any) => ({ value: b.id, label: b.name }))} placeholder={scanBrand || 'Choose a brand'} clearLabel="Clear brand"
+        onChange={(v) => { setBrandId(v as number | null); if (v) setScanBrand(''); }} />
       <Row>
-        <Field label="Brand name" value={scanBrand} onChangeText={(v) => { setScanBrand(v); if (v) setBrandId(null); }} autoCapitalize="words" style={{ minWidth: 150 }} />
-        <Field label="Category name" value={scanCategory} onChangeText={(v) => { setScanCategory(v); if (v) setCatId(null); }} autoCapitalize="words" style={{ minWidth: 150 }} />
+        <Field label="Brand name (if not in the list)" value={scanBrand} onChangeText={(v) => { setScanBrand(v); if (v) setBrandId(null); }} autoCapitalize="words" style={{ minWidth: 150 }} />
+        <Field label="Category name (if not in the list)" value={scanCategory} onChangeText={(v) => { setScanCategory(v); if (v) setCatId(null); }} autoCapitalize="words" style={{ minWidth: 150 }} />
       </Row>
-      {!!tax.data?.brands?.length && (<><H2>Brand</H2><Row>{tax.data.brands.map((b: any) => <Chip key={b.id} label={b.name} active={brandId === b.id} onPress={() => setBrandId(b.id)} />)}</Row></>)}
 
       <H2>Quantity prices</H2>
       <Muted>Each break must be cheaper than the one before.</Muted>
