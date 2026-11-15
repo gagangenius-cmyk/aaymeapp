@@ -13,6 +13,7 @@ const mount = {
   chatRouter: ['/chat'], deviceRouter: ['/devices'], adminRouter: ['/admin'], staffRouter: ['/staff'], inventoryRouter: ['/inventory'], pricingRouter: ['/pricing'],
   distributorCommissionRouter: ['/commission'], supportRouter: ['/support'], fieldRouter: ['/field'], deskRouter: ['/support/desk'], staffOnboardingRouter: ['/staff/onboarding'],
   adminOnboardingRouter: ['/admin'], adminCatalogRouter: ['/admin'], adminCommissionRouter: ['/admin'], router: ['/admin', '/staff/team'],
+  storeRouter: ['/store'], customerRouter: ['/customer'], distributorSalesRouter: ['/sales'], retailerSubscriptionRouter: ['/retailer/subscription'], adminRetailerSalesRouter: ['/admin'], publicRouter: ['/public'],
 };
 const routes = [];
 for (const f of walk(BE + '/modules').filter((f) => f.endsWith('.ts'))) {

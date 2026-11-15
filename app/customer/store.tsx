@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { mediaUrl } from '../../src/lib/api';
 import { useGet } from '../../src/lib/hooks';
 import { ProductImage } from '../../src/ui/ProductImage';
-import { cartCount, cartQty, cartTotal, setCartQty, useStoreCart } from '../../src/lib/storeCart';
+import { cartCount, cartQty, cartTotal, clearCart, setCartQty, useStoreCart } from '../../src/lib/storeCart';
 import { colors } from '../../src/lib/theme';
 import { Alert } from '../../src/ui/alert';
 import { Body, Button, Card, Chip, Empty, ErrorBox, Field, H2, inr, Loading, Muted, Row, Screen } from '../../src/ui/kit';
@@ -24,7 +24,7 @@ export default function CustomerStore() {
   const s = view.data?.store;
   const add = (p: any, qty: number) => {
     if (!setCartQty({ id: s.id, name: s.name }, p, qty)) Alert.alert('Start a new basket?', `Your basket has items from ${cart.store_name}. Clear it and add from ${s.name}?`, [
-      { text: 'Keep basket', style: 'cancel' }, { text: 'Start new', style: 'destructive', onPress: () => { setCartQty({ id: -1, name: '' }, { id: -1, name: '', price: 0, unit: '' }, 0); setCartQty({ id: s.id, name: s.name }, p, qty); } }]);
+      { text: 'Keep basket', style: 'cancel' }, { text: 'Start new', style: 'destructive', onPress: () => { clearCart(); setCartQty({ id: s.id, name: s.name }, p, qty); } }]);
   };
   if (view.isLoading) return <Screen><Loading /></Screen>;
   if (view.error) return <Screen><ErrorBox error={view.error} retry={view.refetch} /></Screen>;
