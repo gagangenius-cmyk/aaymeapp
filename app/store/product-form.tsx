@@ -26,12 +26,12 @@ export default function StoreProductForm() {
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
   useEffect(() => {
     const p = (existing.data?.products ?? []).find((x: any) => String(x.id) === id); if (!p) return;
-    setF({ name: p.name, brand: p.brand ?? '', category: p.category ?? '', unit: p.unit, barcode: p.barcode ?? '', price: p.price, mrp: p.mrp ?? '', cost: p.cost ?? '', stock_qty: String(p.stock_qty), description: p.description ?? '' });
+    setF({ name: p.name, brand: p.brand ?? '', category: p.category ?? '', sub_category: p.sub_category ?? '', unit: p.unit, barcode: p.barcode ?? '', price: p.price, mrp: p.mrp ?? '', cost: p.cost ?? '', stock_qty: String(p.stock_qty), description: p.description ?? '' });
     setActive(p.is_active);
   }, [existing.data, id]);
   const body = () => ({
     name: f.name?.trim(), unit: f.unit || 'pcs', price: f.price, stock_qty: Number(f.stock_qty || 0), is_active: active,
-    brand: f.brand?.trim() || null, category: f.category?.trim() || null, barcode: f.barcode?.trim() || null, description: f.description?.trim() || null,
+    brand: f.brand?.trim() || null, category: f.category?.trim() || null, sub_category: f.sub_category?.trim() || null, barcode: f.barcode?.trim() || null, description: f.description?.trim() || null,
     mrp: f.mrp?.trim() ? f.mrp.trim() : null, cost: f.cost?.trim() ? f.cost.trim() : null,
   });
   const save = useSend<any>(id ? `/store/products/${id}` : '/store/products', { method: id ? 'PUT' : 'POST', invalidate: ['/store/products', '/store/dashboard'], success: 'Product saved', onDone: async (p) => {
@@ -63,6 +63,7 @@ export default function StoreProductForm() {
         <Select label="Unit" value={f.unit} options={UNITS.map((u) => ({ value: u, label: u }))} onChange={(v) => set('unit')(String(v))} style={{ minWidth: 130, flex: 1 }} />
       </Row>
       <Select label="Category" value={f.category || null} options={cats} placeholder="Choose a category" allowNew newLabel="Add a new category" clearLabel="Clear category" onChange={(v) => set('category')(v ? String(v) : '')} />
+      {!!f.category && <Field label="Sub-category (optional)" value={f.sub_category ?? ''} onChangeText={set('sub_category')} placeholder="For example Laptops under Electronics" />}
       <Select label="Brand" value={f.brand || null} options={brands} placeholder={brands.length ? 'Choose a brand' : 'Add a brand'} allowNew newLabel="Add a new brand" clearLabel="Clear brand" onChange={(v) => set('brand')(v ? String(v) : '')} />
       <Field label="Description (optional)" value={f.description ?? ''} onChangeText={set('description')} multiline style={{ minHeight: 60 }} />
       {id ? <StorePhotos productId={Number(id)} images={current?.images ?? []} /> : <NewProductPhotos photos={picked} onChange={setPicked} />}

@@ -8,6 +8,7 @@ import { useGet } from '../../src/lib/hooks';
 import { currentPlace, Place } from '../../src/lib/place';
 import { colors, radius } from '../../src/lib/theme';
 import { AppText as Text } from '../../src/ui/AppText';
+import { ProductTile } from '../../src/ui/ProductTile';
 import { StoreCard } from '../../src/ui/StoreCard';
 import { Button, Empty, ErrorBox, H2, Loading, Muted, Row, Screen } from '../../src/ui/kit';
 
@@ -27,10 +28,12 @@ export default function CustomerHome() {
   const q = useGet<any>('/customer/home', place ? { lat: place.lat, lng: place.lng } : undefined);
   // where the customer is right now (best effort); the saved address is used when the phone cannot say
   useEffect(() => { currentPlace().then((p) => { if (p) { setPlace(p); api('/customer/me', { method: 'PUT', body: { lat: p.lat, lng: p.lng } }).catch(() => {}); } }); }, []);
+  const cat = useGet<any>('/customer/catalog', place ? { lat: place.lat, lng: place.lng } : undefined);
   const d = q.data;
+  const open = (name: string, sub?: string) => router.push({ pathname: '/customer/category', params: sub ? { name, sub } : { name } });
   const search = (v?: string) => router.push({ pathname: '/(customer)/search', params: { q: v ?? text } });
   return (
-    <Screen onRefresh={() => { qc.invalidateQueries({ queryKey: ['/customer/home'] }); }} refreshing={q.isRefetching}>
+    <Screen onRefresh={() => { qc.invalidateQueries({ queryKey: ['/customer/home'] }); qc.invalidateQueries({ queryKey: ['/customer/catalog'] }); }} refreshing={q.isRefetching}>
       <Row style={{ flexWrap: 'nowrap', gap: 10 }}>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.surface, borderRadius: 24, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, minHeight: 46 }}>
           <Ionicons name="search" size={20} color={colors.muted} />
@@ -40,6 +43,19 @@ export default function CustomerHome() {
           <Ionicons name="qr-code" size={22} color={colors.primary} />
         </Pressable>
       </Row>
+
+      {!!cat.data?.categories.length && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 22, paddingHorizontal: 4 }} style={{ flexGrow: 0, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+          <View style={{ alignItems: 'center', gap: 4, paddingBottom: 8, borderBottomWidth: 3, borderBottomColor: colors.primary }}>
+            <Ionicons name="bag-handle" size={24} color={colors.primary} /><Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>For You</Text>
+          </View>
+          {cat.data.categories.map((c: any) => (
+            <Pressable key={c.name} onPress={() => open(c.name)} accessibilityRole="button" accessibilityLabel={c.name} style={{ alignItems: 'center', gap: 4, paddingBottom: 8 }}>
+              <Ionicons name={iconFor(c.name)} size={24} color={colors.text} /><Text numberOfLines={1} style={{ color: colors.muted, fontSize: 12, maxWidth: 84 }}>{c.name}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
 
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : (<>
         {!!d.banners.length && (
@@ -55,16 +71,26 @@ export default function CustomerHome() {
           </ScrollView>
         )}
 
-        {!!d.categories.length && (<>
-          <Row style={{ justifyContent: 'space-between' }}><H2>Shop by Category</H2><Pressable onPress={() => search('')}><Text style={{ color: colors.primary, fontWeight: '700' }}>View All ›</Text></Pressable></Row>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }} style={{ flexGrow: 0 }}>
-            {d.categories.map((c: any, i: number) => (
-              <Pressable key={c.name} onPress={() => search(c.name)} style={{ width: 112, alignItems: 'center', gap: 8, backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, padding: 12 }}>
-                <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: TINT[i % TINT.length], alignItems: 'center', justifyContent: 'center' }}><Ionicons name={iconFor(c.name)} size={30} color={colors.primary} /></View>
-                <Text numberOfLines={2} style={{ color: colors.text, fontSize: 12.5, textAlign: 'center' }}>{c.name}</Text>
+        {!!cat.data?.categories.length && (<>
+          <Row style={{ justifyContent: 'space-between' }}><H2>Shop by Category</H2><Pressable onPress={() => router.push('/customer/category')}><Text style={{ color: colors.primary, fontWeight: '700' }}>View All ›</Text></Pressable></Row>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 14 }}>
+            {cat.data.categories.slice(0, 12).map((c: any, i: number) => (
+              <Pressable key={c.name} onPress={() => open(c.name)} accessibilityRole="button" accessibilityLabel={c.name} style={{ width: '25%', alignItems: 'center', gap: 6 }}>
+                <View style={{ width: 62, height: 62, borderRadius: 18, backgroundColor: TINT[i % TINT.length], alignItems: 'center', justifyContent: 'center' }}><Ionicons name={iconFor(c.name)} size={28} color={colors.primary} /></View>
+                <Text numberOfLines={2} style={{ color: colors.text, fontSize: 12, textAlign: 'center' }}>{c.name}</Text>
               </Pressable>
             ))}
-          </ScrollView>
+          </View>
+          {cat.data.rails.filter((r: any) => r.products.length).map((r: any) => {
+            const subs = cat.data.categories.find((c: any) => c.name === r.category)?.sub_categories ?? [];
+            return (
+              <View key={r.category} style={{ gap: 8 }}>
+                <Row style={{ justifyContent: 'space-between' }}><H2>{r.category}</H2><Pressable onPress={() => open(r.category)}><Text style={{ color: colors.primary, fontWeight: '700' }}>See all ›</Text></Pressable></Row>
+                {!!subs.length && <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }} style={{ flexGrow: 0 }}>{subs.slice(0, 10).map((x: any) => <Pressable key={x.name} onPress={() => open(r.category, x.name)} style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 99, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}><Text style={{ color: colors.text, fontSize: 12.5 }}>{x.name}</Text></Pressable>)}</ScrollView>}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }} style={{ flexGrow: 0 }}>{r.products.map((p: any) => <ProductTile key={`${p.store_id}-${p.id}`} p={p} width={156} />)}</ScrollView>
+              </View>
+            );
+          })}
         </>)}
 
         {d.pinned_store && <StoreCard s={d.pinned_store} pinned />}
