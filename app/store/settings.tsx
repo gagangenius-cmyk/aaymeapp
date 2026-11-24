@@ -9,6 +9,7 @@ export default function StoreSettings() {
   const q = useGet<any>('/store/me');
   const [f, setF] = useState<Record<string, string>>({});
   const [flags, setFlags] = useState({ delivery_enabled: true, accepts_cod: true, accepts_upi: true, is_active: true });
+  const [days, setDays] = useState(0);
   const [override, setOverride] = useState<0 | 1 | null>(null);
   const [pos, setPos] = useState<{ lat: number; lng: number } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -16,7 +17,8 @@ export default function StoreSettings() {
     const s = q.data?.store; if (!s) return;
     setF({ name: s.name ?? '', description: s.description ?? '', phone: s.phone ?? '', address: s.address ?? '', pincode: s.pincode ?? '', opens_at: s.opens_at ?? '', closes_at: s.closes_at ?? '',
       delivery_fee: s.delivery_fee ?? '0', free_delivery_above: s.free_delivery_above ?? '', min_order: s.min_order ?? '0', dmin: s.delivery_minutes ? String(s.delivery_minutes.min) : '', dmax: s.delivery_minutes ? String(s.delivery_minutes.max) : '',
-      upi_id: s.upi_id ?? '', upi_payee: s.upi_payee ?? '', whatsapp_url: s.whatsapp_url ?? '', facebook_url: s.facebook_url ?? '', instagram_url: s.instagram_url ?? '', youtube_url: s.youtube_url ?? '' });
+      upi_id: s.upi_id ?? '', upi_payee: s.upi_payee ?? '', whatsapp_url: s.whatsapp_url ?? '', facebook_url: s.facebook_url ?? '', instagram_url: s.instagram_url ?? '', youtube_url: s.youtube_url ?? '', notice: s.notice_text ?? '' });
+    setDays(s.notice_expires_at ? Math.max(1, Math.round((new Date(s.notice_expires_at).getTime() - Date.now()) / 86_400_000)) : 0);
     setFlags({ delivery_enabled: s.delivery_enabled, accepts_cod: s.accepts_cod, accepts_upi: s.accepts_upi || !!s.upi_id, is_active: s.is_active });
     setOverride(s.open_override ?? null); if (s.lat != null) setPos({ lat: s.lat, lng: s.lng });
   }, [q.data]);
@@ -38,6 +40,7 @@ export default function StoreSettings() {
       delivery_minutes_min: f.dmin ? Number(f.dmin) : null, delivery_minutes_max: f.dmax ? Number(f.dmax) : null,
       upi_id: nul(f.upi_id), upi_payee: nul(f.upi_payee), accepts_cod: flags.accepts_cod, accepts_upi: flags.accepts_upi, is_active: flags.is_active,
       whatsapp_url: nul(f.whatsapp_url), facebook_url: nul(f.facebook_url), instagram_url: nul(f.instagram_url), youtube_url: nul(f.youtube_url),
+      notice: nul(f.notice), notice_days: nul(f.notice) && days ? days : null,
     }, { onError: (e) => setErrors(fieldErrors(e)) });
   };
   if (q.isLoading) return <Screen><Loading /></Screen>;
@@ -73,6 +76,12 @@ export default function StoreSettings() {
         <Toggle label="UPI" help="Customers pay straight into your account. The QR on your bills uses it." value={flags.accepts_upi} onChange={(v) => setFlags({ ...flags, accepts_upi: v })} />
         <Field label="Your UPI id" value={f.upi_id ?? ''} onChangeText={set('upi_id')} autoCapitalize="none" placeholder="name@bank" error={errors.upi_id} />
         <Field label="Name on UPI (optional)" value={f.upi_payee ?? ''} onChangeText={set('upi_payee')} />
+      </Card>
+      <Card>
+        <H2>Notice for customers</H2>
+        <Muted>One line that scrolls across your store on customers' phones, like a news ticker. Leave it empty to show nothing.</Muted>
+        <Field label="Notice" value={f.notice ?? ''} onChangeText={set('notice')} maxLength={300} placeholder="e.g. Free delivery on orders above ₹500 this Sunday" multiline />
+        <Row>{([[1, '1 day'], [3, '3 days'], [7, '7 days'], [0, 'Until I remove it']] as [number, string][]).map(([n, l]) => <Chip key={n} label={l} active={days === n} onPress={() => setDays(n)} />)}</Row>
       </Card>
       <Card>
         <H2>Links</H2>

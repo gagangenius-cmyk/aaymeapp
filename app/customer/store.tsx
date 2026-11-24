@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Linking, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { mediaUrl } from '../../src/lib/api';
 import { useGet } from '../../src/lib/hooks';
@@ -8,6 +9,7 @@ import { ProductImage } from '../../src/ui/ProductImage';
 import { cartCount, cartQty, cartTotal, clearCart, setCartQty, useStoreCart } from '../../src/lib/storeCart';
 import { colors } from '../../src/lib/theme';
 import { Alert } from '../../src/ui/alert';
+import { NoticeTicker } from '../../src/ui/NoticeTicker';
 import { Body, Button, Card, Chip, Empty, ErrorBox, Field, H2, inr, Loading, Muted, Row, Screen } from '../../src/ui/kit';
 
 const SOCIAL: [string, keyof typeof Ionicons.glyphMap, string][] = [['whatsapp_url', 'logo-whatsapp', '#25D366'], ['facebook_url', 'logo-facebook', '#1877F2'], ['instagram_url', 'logo-instagram', '#E1306C'], ['youtube_url', 'logo-youtube', '#FF0000']];
@@ -16,6 +18,7 @@ const SOCIAL: [string, keyof typeof Ionicons.glyphMap, string][] = [['whatsapp_u
 export default function CustomerStore() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const cart = useStoreCart();
   const [category, setCategory] = useState('');
   const [text, setText] = useState('');
@@ -49,6 +52,8 @@ export default function CustomerStore() {
           </Row>
         </Card>
 
+        {!!s.notice && <NoticeTicker text={s.notice} />}
+
         {view.data.offers.map((o: any) => <Card key={o.id}><Body style={{ fontWeight: '800', color: colors.primary }}>{o.title}</Body>{!!o.description && <Muted>{o.description}</Muted>}</Card>)}
 
         <Field label="Search in this store" value={text} onChangeText={setText} placeholder="Product or brand" />
@@ -76,10 +81,10 @@ export default function CustomerStore() {
               </Card>
             );
           })}
-        {count > 0 && <View style={{ height: 70 }} />}
+        {count > 0 && <View style={{ height: 70 + insets.bottom }} />}
       </Screen>
       {count > 0 && (
-        <View style={{ position: 'absolute', left: 12, right: 12, bottom: 12 }}>
+        <View style={{ position: 'absolute', left: 12, right: 12, bottom: 12 + insets.bottom }}>
           <Button title={`View basket · ${count} ${count === 1 ? 'item' : 'items'} · ${inr(cartTotal(cart))}`} onPress={() => router.push('/customer/cart')} />
         </View>
       )}

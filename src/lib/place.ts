@@ -1,11 +1,26 @@
 import * as Location from 'expo-location';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 export interface Place { lat: number; lng: number }
 
-/** The phone's current position, or null when permission is refused or the position cannot be read. */
-export async function currentPlace(): Promise<Place | null> {
+const ASKED = 'loc_asked';
+/**
+ * The phone's current position, or null when permission is refused or the position cannot be read.
+ * `quiet` is for screens that look up the position by themselves on opening: they ask for permission only once ever
+ * (not on every launch), and use the position only while permission is already given.
+ */
+export async function currentPlace(opts: { quiet?: boolean } = {}): Promise<Place | null> {
   try {
-    const p = await Location.requestForegroundPermissionsAsync();
+    let p = await Location.getForegroundPermissionsAsync();
+    if (!p.granted) {
+      if (opts.quiet) {
+        if (!p.canAskAgain || Platform.OS === 'web') return null;
+        if (await SecureStore.getItemAsync(ASKED).catch(() => null)) return null;
+        await SecureStore.setItemAsync(ASKED, '1').catch(() => {});
+      }
+      p = await Location.requestForegroundPermissionsAsync();
+    }
     if (!p.granted) return null;
     const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
     return { lat: Number(pos.coords.latitude.toFixed(6)), lng: Number(pos.coords.longitude.toFixed(6)) };

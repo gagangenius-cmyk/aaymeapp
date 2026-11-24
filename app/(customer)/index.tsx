@@ -8,6 +8,8 @@ import { useGet } from '../../src/lib/hooks';
 import { currentPlace, Place } from '../../src/lib/place';
 import { colors, radius } from '../../src/lib/theme';
 import { AppText as Text } from '../../src/ui/AppText';
+import { BasketBar } from '../../src/ui/BasketBar';
+import { NoticeTicker } from '../../src/ui/NoticeTicker';
 import { ProductTile } from '../../src/ui/ProductTile';
 import { StoreCard } from '../../src/ui/StoreCard';
 import { Button, Empty, ErrorBox, H2, Loading, Muted, Row, Screen } from '../../src/ui/kit';
@@ -27,12 +29,13 @@ export default function CustomerHome() {
   const [text, setText] = useState('');
   const q = useGet<any>('/customer/home', place ? { lat: place.lat, lng: place.lng } : undefined);
   // where the customer is right now (best effort); the saved address is used when the phone cannot say
-  useEffect(() => { currentPlace().then((p) => { if (p) { setPlace(p); api('/customer/me', { method: 'PUT', body: { lat: p.lat, lng: p.lng } }).catch(() => {}); } }); }, []);
+  useEffect(() => { currentPlace({ quiet: true }).then((p) => { if (p) { setPlace(p); api('/customer/me', { method: 'PUT', body: { lat: p.lat, lng: p.lng } }).catch(() => {}); } }); }, []);
   const cat = useGet<any>('/customer/catalog', place ? { lat: place.lat, lng: place.lng } : undefined);
   const d = q.data;
   const open = (name: string, sub?: string) => router.push({ pathname: '/customer/category', params: sub ? { name, sub } : { name } });
   const search = (v?: string) => router.push({ pathname: '/(customer)/search', params: { q: v ?? text } });
   return (
+    <View style={{ flex: 1 }}>
     <Screen onRefresh={() => { qc.invalidateQueries({ queryKey: ['/customer/home'] }); qc.invalidateQueries({ queryKey: ['/customer/catalog'] }); }} refreshing={q.isRefetching}>
       <Row style={{ flexWrap: 'nowrap', gap: 10 }}>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.surface, borderRadius: 24, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, minHeight: 46 }}>
@@ -81,6 +84,8 @@ export default function CustomerHome() {
               </Pressable>
             ))}
           </View>
+          {d.pinned_store && <StoreCard s={d.pinned_store} pinned />}
+          {!!d.pinned_store?.notice && <NoticeTicker text={d.pinned_store.notice} />}
           {cat.data.rails.filter((r: any) => r.products.length).map((r: any) => {
             const subs = cat.data.categories.find((c: any) => c.name === r.category)?.sub_categories ?? [];
             return (
@@ -93,12 +98,15 @@ export default function CustomerHome() {
           })}
         </>)}
 
-        {d.pinned_store && <StoreCard s={d.pinned_store} pinned />}
+        {!cat.data?.categories.length && d.pinned_store && <StoreCard s={d.pinned_store} pinned />}
+        {!cat.data?.categories.length && !!d.pinned_store?.notice && <NoticeTicker text={d.pinned_store.notice} />}
         <H2>Nearby Stores</H2>
         {!d.nearby_stores.length && !d.pinned_store ? <Empty text="No stores near you yet. Scan a store's QR code to open it." /> : d.nearby_stores.map((s: any) => <StoreCard key={s.id} s={s} />)}
         {!place && <Muted>Allow location to see the stores closest to you.</Muted>}
         <Button variant="ghost" title="Scan a store QR code" onPress={() => router.push('/customer/scan')} />
       </>)}
     </Screen>
+    <BasketBar tabs />
+    </View>
   );
 }

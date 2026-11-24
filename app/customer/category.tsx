@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useGet } from '../../src/lib/hooks';
 import { colors, radius } from '../../src/lib/theme';
 import { AppText as Text } from '../../src/ui/AppText';
+import { BasketBar } from '../../src/ui/BasketBar';
 import { ProductGrid } from '../../src/ui/ProductTile';
 import { Chip, Empty, ErrorBox, H2, Loading, Muted, Row, Screen } from '../../src/ui/kit';
 
@@ -25,6 +26,7 @@ export default function CustomerCategory() {
   const reset = () => { setBrand(''); setSort('relevance'); setPrice(0); setInStock(false); };
   const filtered = !!brand || sort !== 'relevance' || price !== 0 || inStock;
   return (
+    <View style={{ flex: 1 }}>
     <Screen onRefresh={() => r.refetch()} refreshing={r.isRefetching}>
       <H2>{params.name || 'All products'}</H2>
       {!!f?.sub_categories.length && (
@@ -66,5 +68,7 @@ export default function CustomerCategory() {
       </>)}
       <View style={{ height: 8 }} />
     </Screen>
+    <BasketBar />
+    </View>
   );
 }
