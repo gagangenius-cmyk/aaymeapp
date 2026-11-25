@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Linking } from 'react-native';
+import { useRouter } from 'expo-router';
 import { fieldErrors, useGet, useSend } from '../../src/lib/hooks';
 import { Body, Button, Card, Chip, Empty, ErrorBox, Field, H2, inr, Loading, Muted, Row, Screen } from '../../src/ui/kit';
 
@@ -7,6 +8,7 @@ const SOURCE: Record<string, string> = { qr: 'Joined by QR', online: 'Ordered on
 
 /** The store's customers: who joined by QR, who ordered, who was billed at the counter, and what each has spent. */
 export default function StoreCustomers() {
+  const router = useRouter();
   const [find, setFind] = useState('');
   const [f, setF] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -26,7 +28,7 @@ export default function StoreCustomers() {
             <Row style={{ justifyContent: 'space-between' }}><Body style={{ fontWeight: '700' }}>{c.name}</Body>{c.has_app && <Chip label="On AAYME" tone="ok" />}</Row>
             <Muted>{c.phone} · {SOURCE[c.source] ?? c.source}</Muted>
             <Muted>{c.orders} {c.orders === 1 ? 'order' : 'orders'} · {inr(c.spent)}</Muted>
-            <Row><Button small variant="ghost" title="Call" onPress={() => Linking.openURL(`tel:${c.phone}`)} /><Button small variant="ghost" title="WhatsApp" onPress={() => Linking.openURL(`https://wa.me/91${c.phone}`)} /></Row>
+            <Row><Button small variant="ghost" title="Call" onPress={() => Linking.openURL(`tel:${c.phone}`)} /><Button small variant="ghost" title="WhatsApp" onPress={() => Linking.openURL(`https://wa.me/91${c.phone}`)} /><Button small variant="ghost" title="Dates" onPress={() => router.push({ pathname: '/store/occasions', params: { id: String(c.id) } })} /></Row>
           </Card>
         ))}
     </Screen>

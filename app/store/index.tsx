@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useGet } from '../../src/lib/hooks';
 import { colors, radius } from '../../src/lib/theme';
 import { AppText as Text } from '../../src/ui/AppText';
+import { OccasionReminder } from '../../src/ui/OccasionReminder';
 import { Body, Button, Card, ErrorBox, H1, H2, inr, Loading, Muted, Row, Screen } from '../../src/ui/kit';
 
 const TILES: [keyof typeof Ionicons.glyphMap, string, string][] = [
@@ -28,6 +29,7 @@ export default function StoreHome() {
   );
   return (
     <Screen onRefresh={q.refetch} refreshing={q.isRefetching}>
+      <OccasionReminder />
       <H1>My online store</H1>
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} retry={q.refetch} /> : (<>
         {!d.live && (

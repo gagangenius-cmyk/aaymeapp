@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../../src/lib/api';
 import { fieldErrors, useGet } from '../../src/lib/hooks';
 import { cartTotal, clearCart, setCartQty, useStoreCart } from '../../src/lib/storeCart';
 import { Alert } from '../../src/ui/alert';
+import { OrderPlaced } from '../../src/ui/OrderPlaced';
 import { Body, Button, Card, Chip, Empty, Field, H2, inr, Muted, Row, Screen } from '../../src/ui/kit';
 
 /** The basket: change quantities, give the delivery address, choose cash on delivery or UPI, and place the order. */
@@ -35,17 +35,7 @@ export default function Cart() {
     } catch (e: any) { Alert.alert('Order not placed', e.message); void fieldErrors; } finally { setBusy(false); }
   }
 
-  if (done) return (
-    <Screen>
-      <Card>
-        <H2>Order placed</H2>
-        <Body style={{ fontWeight: '800', fontSize: 22 }}>{inr(done.total)}</Body>
-        <Muted>{done.payment_method === 'cod' ? 'Pay in cash when it is delivered.' : 'Pay the store on UPI. The store marks the order paid when the money arrives.'}</Muted>
-        {!!done.upi_link && <Button title="Pay with a UPI app" onPress={() => Linking.openURL(done.upi_link).catch(() => Alert.alert('UPI', 'No UPI app was found on this phone.'))} />}
-      </Card>
-      <Button title="Track my order" onPress={() => router.replace({ pathname: '/customer/order', params: { id: String(done.id) } })} />
-    </Screen>
-  );
+  if (done) return <OrderPlaced order={done} onTrack={() => router.replace('/(customer)/orders')} />;
   if (!cart.lines.length) return <Screen><Empty text="Your basket is empty" /></Screen>;
   return (
     <Screen>

@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useGet, useSend } from '../../src/lib/hooks';
 import { colors } from '../../src/lib/theme';
 import { Body, Button, Card, ErrorBox, Loading, Muted, Screen } from '../../src/ui/kit';
+import { OccasionReminder } from '../../src/ui/OccasionReminder';
 import { SearchBar } from '../../src/ui/SearchBar';
 import { StoreView } from '../../src/ui/StoreView';
 
@@ -31,6 +32,7 @@ export default function RetailerHome() {
 
   return (
     <Screen onRefresh={() => { stores.refetch(); requests.refetch(); }} refreshing={stores.isRefetching}>
+      <OccasionReminder />
       <View style={{ backgroundColor: colors.navy, marginHorizontal: -16, marginTop: -16, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 14, gap: 12, zIndex: 10 }}>
         <Pressable onPress={() => options.length > 0 && setOpen(!open)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#FFFFFF1F', alignItems: 'center', justifyContent: 'center' }}><Ionicons name="storefront" size={20} color={colors.gold} /></View>
