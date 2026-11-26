@@ -17,6 +17,8 @@ export default function CustomerOccasions() {
   const [f, setF] = useState<Record<string, any>>({ kind: 'birthday', relation: 'Self' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const add = useSend<any>(`/store/customers/${id}/occasions`, { invalidate: [`/store/customers/${id}/occasions`, '/store/occasions/upcoming'], success: 'Date saved', onDone: () => setF({ kind: 'birthday', relation: 'Self' }) });
+  const [name, setName] = useState<string | null>(null);
+  const rename = useSend<{ name: string }>(`/store/customers/${id}`, { method: 'PUT', invalidate: [`/store/customers/${id}/occasions`, '/store/customers'], success: 'Customer saved', onDone: () => setName(null) });
   const del = useSend<{ id: number }>((b) => `/store/occasions/${b.id}`, { method: 'DELETE', invalidate: [`/store/customers/${id}/occasions`, '/store/occasions/upcoming'], success: 'Removed' });
   const set = (k: string) => (v: any) => setF((s) => ({ ...s, [k]: v }));
   const days = f.month ? new Date(2024, f.month, 0).getDate() : 31;
@@ -29,7 +31,12 @@ export default function CustomerOccasions() {
   if (q.error) return <Screen><ErrorBox error={q.error} retry={q.refetch} /></Screen>;
   return (
     <Screen onRefresh={q.refetch} refreshing={q.isRefetching}>
-      <H2>{q.data.customer.name}</H2>
+      <Card>
+        <H2>Customer details</H2>
+        <Field label="Name" value={name ?? q.data.customer.name} onChangeText={setName} autoCapitalize="words" />
+        <Muted>{q.data.customer.phone}</Muted>
+        {name !== null && name.trim() !== q.data.customer.name && <Button small title="Save name" loading={rename.isPending} disabled={name.trim().length < 2} onPress={() => rename.mutate({ name: name.trim() })} />}
+      </Card>
       <Muted>Save the birthdays and anniversaries of this customer and their family. You will get a reminder before each one, to send a wish and an offer.</Muted>
       <Card>
         <H2>Add a date</H2>

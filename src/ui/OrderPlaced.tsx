@@ -7,6 +7,7 @@ import { colors, radius } from '../lib/theme';
 import { Alert } from './alert';
 import { AppText as Text } from './AppText';
 import { Logo } from './Logo';
+import { NotificationBell } from './NotificationBell';
 import { inr } from './kit';
 
 const GREEN = '#1B9A2E';
@@ -42,7 +43,10 @@ export function OrderPlaced({ order, onTrack }: { order: any; onTrack: () => voi
         {CONFETTI.map(([l, t, c, r], i) => <View key={i} pointerEvents="none" style={{ position: 'absolute', left: `${l}%`, top: t, width: 9, height: 16, borderRadius: 2, backgroundColor: c, transform: [{ rotate: `${r}deg` }] }} />)}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Logo size={34} tagline={false} />
-          <Pressable onPress={() => router.replace('/(customer)')} hitSlop={10} accessibilityRole="button" accessibilityLabel="Home"><Ionicons name="home" size={28} color={colors.primary} /></Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <NotificationBell />
+            <Pressable onPress={() => router.replace('/(customer)')} hitSlop={10} accessibilityRole="button" accessibilityLabel="Home"><Ionicons name="home" size={28} color={colors.primary} /></Pressable>
+          </View>
         </View>
         <View style={{ alignItems: 'center', gap: 6, marginTop: 8 }}>
           <Animated.View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center', borderWidth: 6, borderColor: '#fff', transform: [{ scale: pop }] }}>

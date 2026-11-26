@@ -28,7 +28,7 @@ export default function StoreCustomers() {
             <Row style={{ justifyContent: 'space-between' }}><Body style={{ fontWeight: '700' }}>{c.name}</Body>{c.has_app && <Chip label="On AAYME" tone="ok" />}</Row>
             <Muted>{c.phone} · {SOURCE[c.source] ?? c.source}</Muted>
             <Muted>{c.orders} {c.orders === 1 ? 'order' : 'orders'} · {inr(c.spent)}</Muted>
-            <Row><Button small variant="ghost" title="Call" onPress={() => Linking.openURL(`tel:${c.phone}`)} /><Button small variant="ghost" title="WhatsApp" onPress={() => Linking.openURL(`https://wa.me/91${c.phone}`)} /><Button small variant="ghost" title="Dates" onPress={() => router.push({ pathname: '/store/occasions', params: { id: String(c.id) } })} /></Row>
+            <Row><Button small variant="ghost" title="Call" onPress={() => Linking.openURL(`tel:${c.phone}`)} /><Button small variant="ghost" title="WhatsApp" onPress={() => Linking.openURL(`https://wa.me/91${c.phone}`)} /><Button small variant="ghost" title="Edit & dates" onPress={() => router.push({ pathname: '/store/occasions', params: { id: String(c.id) } })} /></Row>
           </Card>
         ))}
     </Screen>

@@ -505,4 +505,9 @@ export const HI_MORE: Record<string, string> = {
   "Send wish": "बधाई भेजें",
   "Later": "बाद में",
   "Wish your customers in advance, and send them an offer.": "अपने ग्राहकों को पहले से बधाई दें और उन्हें ऑफ़र भेजें।",
+  "Notifications": "सूचनाएँ",
+  "No offers from your stores yet": "आपके स्टोर से अभी कोई ऑफ़र नहीं",
+  "Customer details": "ग्राहक की जानकारी",
+  "Save name": "नाम सेव करें",
+  "Edit & dates": "बदलें और तारीखें",
 };

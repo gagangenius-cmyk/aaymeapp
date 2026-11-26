@@ -9,6 +9,7 @@ import { currentPlace, Place } from '../../src/lib/place';
 import { colors, radius } from '../../src/lib/theme';
 import { AppText as Text } from '../../src/ui/AppText';
 import { BasketBar } from '../../src/ui/BasketBar';
+import { NotificationBell } from '../../src/ui/NotificationBell';
 import { NoticeTicker } from '../../src/ui/NoticeTicker';
 import { ProductTile } from '../../src/ui/ProductTile';
 import { StoreCard } from '../../src/ui/StoreCard';
@@ -45,6 +46,7 @@ export default function CustomerHome() {
         <Pressable onPress={() => router.push('/customer/scan')} accessibilityRole="button" accessibilityLabel="Scan a store QR" style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="qr-code" size={22} color={colors.primary} />
         </Pressable>
+        <NotificationBell />
       </Row>
 
       {!!cat.data?.categories.length && (

@@ -22,8 +22,8 @@ export function NoticeTicker({ text }: { text: string }) {
         <Ionicons name="megaphone" size={16} color="#fff" /><Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>NOTICE</Text>
       </View>
       <View style={{ flex: 1, height: 36, justifyContent: 'center', overflow: 'hidden' }} onLayout={(e) => setBox(e.nativeEvent.layout.width)}>
-        <Animated.View style={{ position: 'absolute', transform: [{ translateX: x }] }}>
-          <Text numberOfLines={1} onLayout={(e) => setLine(e.nativeEvent.layout.width)} style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>{text}</Text>
+        <Animated.View style={{ position: 'absolute', width: 6000, flexDirection: 'row', transform: [{ translateX: x }] }}>
+          <Text onLayout={(e) => setLine(e.nativeEvent.layout.width)} style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>{text.replace(/\s+/g, ' ')}</Text>
         </Animated.View>
       </View>
     </View>
