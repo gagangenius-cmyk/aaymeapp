@@ -510,4 +510,9 @@ export const HI_MORE: Record<string, string> = {
   "Customer details": "ग्राहक की जानकारी",
   "Save name": "नाम सेव करें",
   "Edit & dates": "बदलें और तारीखें",
+  "Add banner picture": "बैनर की फ़ोटो जोड़ें",
+  "Change banner": "बैनर बदलें",
+  "Remove picture": "फ़ोटो हटाएँ",
+  "A wide picture (2:1), for example 1200 x 600, fills the banner best.": "चौड़ी फ़ोटो (2:1), जैसे 1200 x 600, बैनर में सबसे अच्छी बैठती है।",
+  "Banner not added": "बैनर नहीं जुड़ा",
 };

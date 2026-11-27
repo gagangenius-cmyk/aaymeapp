@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Linking, Pressable, View } from 'react-native';
+import { Image, Linking, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -54,7 +54,7 @@ export default function CustomerStore() {
 
         {!!s.notice && <NoticeTicker text={s.notice} />}
 
-        {view.data.offers.map((o: any) => <Card key={o.id}><Body style={{ fontWeight: '800', color: colors.primary }}>{o.title}</Body>{!!o.description && <Muted>{o.description}</Muted>}</Card>)}
+        {view.data.offers.map((o: any) => <Card key={o.id}>{!!o.image_url && <Image source={{ uri: mediaUrl(o.image_url)! }} resizeMode="contain" style={{ width: '100%', aspectRatio: 2 }} />}<Body style={{ fontWeight: '800', color: colors.primary }}>{o.title}</Body>{!!o.description && <Muted>{o.description}</Muted>}</Card>)}
 
         <Field label="Search in this store" value={text} onChangeText={setText} placeholder="Product or brand" />
         <Row>
